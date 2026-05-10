@@ -1,1163 +1,135 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Atmise ERP v3.6 — 아트미즈</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--g:#1D9E75;--bg:#fff;--bg2:#f8f8f6;--bg3:#f2f1ed;--text:#1a1a1a;--text2:#666;--text3:#999;--border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.2);--radius:8px;--radius-lg:12px}
-@media(prefers-color-scheme:dark){:root{--bg:#1a1a1a;--bg2:#242424;--bg3:#2c2c2c;--text:#f0f0f0;--text2:#aaa;--text3:#666;--border:rgba(255,255,255,0.12);--border2:rgba(255,255,255,0.2)}}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;background:var(--bg3);color:var(--text);min-height:100vh}
-.wrap{max-width:1100px;margin:0 auto;padding:1rem}
-.topbar{display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-radius:var(--radius-lg);padding:.75rem 1.25rem;margin-bottom:1rem;border:.5px solid var(--border);flex-wrap:wrap;gap:.5rem}
-.logo{display:flex;align-items:center;gap:10px}
-.logo-dot{width:32px;height:32px;background:#1D9E75;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600}
-.logo-name{font-size:15px;font-weight:600;color:var(--text)}
-.logo-sub{font-size:11px;color:var(--text2)}
-.datebadge{font-size:12px;color:var(--text2);background:var(--bg2);padding:4px 10px;border-radius:var(--radius);border:.5px solid var(--border)}
-.tabs{display:flex;gap:2px;background:var(--bg);border-radius:var(--radius-lg);padding:.5rem;margin-bottom:1rem;border:.5px solid var(--border);flex-wrap:wrap}
-.tab{padding:7px 12px;font-size:12px;cursor:pointer;border:none;background:none;color:var(--text2);border-radius:var(--radius);font-family:inherit;transition:all .15s;white-space:nowrap}
-.tab.on{background:#1D9E75;color:#fff;font-weight:500}
-.tab:hover:not(.on){background:var(--bg2);color:var(--text)}
-.tab i{vertical-align:-2px;margin-right:4px}
-.sec{display:none}.sec.on{display:block}
-.card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:.9rem}
-.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;flex-wrap:wrap;gap:.5rem}
-.ct{font-size:13px;font-weight:600;color:var(--text)}
-.ct-sub{font-size:11px;color:var(--text3)}
-.stat4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1rem}
-@media(max-width:640px){.stat4{grid-template-columns:repeat(2,1fr)}}
-.sc{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px}
-.sc-lbl{font-size:12px;color:var(--text2);margin-bottom:6px}
-.sc-val{font-size:22px;font-weight:600;color:var(--text)}
-.sc-val.g{color:#1D9E75}.sc-val.a{color:#BA7517}.sc-val.r{color:#A32D2D}
-.fg{display:grid;gap:8px;margin-bottom:8px}
-.fg2{grid-template-columns:1fr 1fr}.fg3{grid-template-columns:1fr 1fr 1fr}.fg4{grid-template-columns:1fr 1fr 1fr 1fr}.fg5{grid-template-columns:1fr 1fr 1fr 1fr 1fr}
-@media(max-width:640px){.fg2,.fg3,.fg4,.fg5{grid-template-columns:1fr 1fr}}
-.fl label{font-size:11px;color:var(--text2);display:block;margin-bottom:3px;font-weight:500}
-.fl input,.fl select,.fl textarea{width:100%;font-size:13px;padding:7px 10px;border:.5px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:inherit;transition:border-color .15s}
-.fl input:focus,.fl select:focus{outline:none;border-color:#1D9E75}
-.fa{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
-.btn{padding:7px 14px;font-size:13px;border:.5px solid var(--border2);border-radius:var(--radius);background:none;cursor:pointer;color:var(--text);font-family:inherit;transition:all .15s}
-.btn:hover{background:var(--bg2)}
-.btn.p{background:#1D9E75;color:#fff;border-color:#1D9E75;font-weight:500}
-.btn.p:hover{background:#0F6E56}
-.btn.sm{padding:3px 9px;font-size:11px}
-.btn.danger{border-color:#E24B4A;color:#A32D2D}.btn.danger:hover{background:#FCEBEB}
-.btn.info{border-color:#378ADD;color:#185FA5}.btn.info:hover{background:#E6F1FB}
-.btn.ghost{border-color:var(--border);color:var(--text2)}.btn.ghost:hover{background:var(--bg2)}
-.tbl-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:12px;min-width:600px}
-th{text-align:left;padding:8px 10px;font-size:11px;color:var(--text2);font-weight:500;border-bottom:.5px solid var(--border);white-space:nowrap;background:var(--bg2)}
-td{padding:7px 10px;border-bottom:.5px solid var(--border);color:var(--text);vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:var(--bg2)}
-tr.row-can td{background:#FFF8F8;color:#888;text-decoration:line-through}
-tr.row-can:hover td{background:#FCEBEB}
-.empty{text-align:center;padding:2rem;color:var(--text3);font-size:12px}
-.badge{display:inline-block;padding:2px 7px;border-radius:var(--radius);font-size:10px;font-weight:600}
-.bd-done{background:#EAF3DE;color:#3B6D11}.bd-pend{background:#FAEEDA;color:#854F0B}
-.bd-ship{background:#E6F1FB;color:#185FA5}.bd-can{background:#FCEBEB;color:#A32D2D}
-.bd-ok{background:#EAF3DE;color:#3B6D11}.bd-low{background:#FCEBEB;color:#A32D2D}
-.bd-zero{background:#f0f0f0;color:#888}.bd-loss{background:#FAEEDA;color:#854F0B}
-.bd-ret{background:#f3e8ff;color:#6b21a8}
-.tag{font-size:10px;background:var(--bg2);padding:2px 7px;border-radius:var(--radius);color:var(--text2);border:.5px solid var(--border);white-space:nowrap}
-.alert-box{padding:10px 14px;border-radius:var(--radius);font-size:12px;border:.5px solid;margin-bottom:.5rem;display:flex;align-items:center;gap:8px}
-.al-w{background:#FAEEDA;border-color:#EF9F27;color:#854F0B}
-.al-d{background:#FCEBEB;border-color:#E24B4A;color:#A32D2D}
-.sum-bar{background:#E1F5EE;border:.5px solid #5DCAA5;border-radius:var(--radius);padding:10px 14px;font-size:12px;color:#0F6E56;margin-bottom:.75rem;display:flex;gap:1.5rem;flex-wrap:wrap}
-.sum-bar span{font-weight:600}
-.cnt{font-size:11px;color:var(--text3);text-align:right;margin-top:8px}
-code{font-family:monospace;font-size:11px;background:var(--bg2);padding:1px 5px;border-radius:4px;border:.5px solid var(--border)}
-.sbar{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:.75rem 1rem;margin-bottom:.9rem}
-.sbar-title{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:.6rem;display:flex;align-items:center;gap:5px}
-.srow{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end}
-.srow .fl{flex:1;min-width:110px}
-.sact{display:flex;gap:6px;padding-top:18px}
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:center;justify-content:center}
-.modal-bg.open{display:flex}
-.modal{background:var(--bg);border-radius:var(--radius-lg);padding:1.5rem;width:90%;max-width:480px;border:.5px solid var(--border);max-height:90vh;overflow-y:auto}
-.modal-title{font-size:14px;font-weight:600;margin-bottom:1rem;color:var(--text)}
-</style>
-</head>
-<body>
-<div class="wrap">
+// ===== Atmise ERP - Google Apps Script =====
+const SHEET_ID = '1JmIFU82kAnKJ0ITOdzrI5pmqpTrH5ksbBgBBZQ9HsyE';
 
-<div class="topbar">
-  <div class="logo">
-    <div class="logo-dot">AT</div>
-    <div>
-      <div class="logo-name">Atmise ERP <span style="font-size:11px;color:#1D9E75;font-weight:400">v3.6</span></div>
-      <div class="logo-sub">아트미즈 통합 관리 시스템</div>
-    </div>
-  </div>
-  <div style="display:flex;gap:8px;align-items:center">
-    <button class="btn info sm" onclick="openExport()"><i class="ti ti-download"></i> 엑셀 내보내기</button>
-    <span id="sync-status" style="font-size:11px;color:#1D9E75;padding:4px 8px"></span><div class="datebadge" id="today"></div>
-  </div>
-</div>
+const SHEETS = {
+  orders:    '주문',
+  stocks:    '재고',
+  settles:   '정산',
+  purchases: '발주',
+  losses:    '로스',
+  channels:  '채널',
+};
 
-<div class="tabs">
-  <button class="tab on" onclick="go('dash')"><i class="ti ti-layout-dashboard"></i> 대시보드</button>
-  <button class="tab" onclick="go('order')"><i class="ti ti-shopping-cart"></i> 주문관리</button>
-  <button class="tab" onclick="go('stock')"><i class="ti ti-box"></i> 재고관리</button>
-  <button class="tab" onclick="go('settle')"><i class="ti ti-coin"></i> 정산관리</button>
-  <button class="tab" onclick="go('purchase')"><i class="ti ti-truck"></i> 발주관리</button>
-  <button class="tab" onclick="go('loss')"><i class="ti ti-alert-triangle"></i> 로스관리</button>
-  <button class="tab" onclick="go('sku-mgmt')"><i class="ti ti-package"></i> SKU관리</button>
-  <button class="tab" onclick="go('ch-mgmt')"><i class="ti ti-building-store"></i> 채널관리</button>
-</div>
+const HEADERS = {
+  orders:    ['id','date','channel','orderNum','buyer','productName','sku','qty','price','settle','ship','track','status','note','settled','settleDate'],
+  stocks:    ['sku','name','line','qty','inQty','outQty','lossQty','avgPrice','safe','note'],
+  settles:   ['id','month','channel','sales','fee','ad','etc','net','note'],
+  purchases: ['id','date','vendor','sku','qty','price','due','status','note'],
+  losses:    ['id','date','sku','qty','type','deduct','note'],
+  channels:  ['id','name','fee','cycle','contact','note'],
+};
 
-<!-- 대시보드 -->
-<div class="sec on" id="sec-dash">
-  <div id="alerts"></div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem" id="dash-stats">
-    <div class="sc"><div class="sc-lbl"><i class="ti ti-shopping-cart"></i> 이번달 주문</div><div class="sc-val g" id="d-orders">0건</div></div>
-    <div class="sc"><div class="sc-lbl"><i class="ti ti-cash"></i> 이번달 매출액</div><div class="sc-val g" id="d-sales">0원</div><div style="font-size:10px;color:var(--text3);margin-top:3px">판매가 합계 (취소제외)</div></div>
-    <div class="sc"><div class="sc-lbl"><i class="ti ti-coin"></i> 이번달 정산액</div><div class="sc-val" id="d-rev">0원</div><div style="font-size:10px;color:var(--text3);margin-top:3px" id="d-rev-label">주문 정산가 합계 기준</div></div>
-    <div class="sc"><div class="sc-lbl"><i class="ti ti-check"></i> 입금완료 건수</div><div class="sc-val g" id="d-settled">0건</div><div style="font-size:10px;color:var(--text3);margin-top:3px" id="d-unsettled-txt"></div></div>
-    <div class="sc"><div class="sc-lbl"><i class="ti ti-alert-triangle"></i> 재고부족 SKU</div><div class="sc-val a" id="d-low">0개</div></div>
-    <div class="sc"><div class="sc-lbl"><i class="ti ti-clock"></i> 미처리 주문</div><div class="sc-val r" id="d-pend">0건</div></div>
-  </div>
-  <style>@media(max-width:640px){#dash-stats{grid-template-columns:repeat(2,1fr)!important}}</style>
-  <div class="card">
-    <div class="ch"><span class="ct">최근 주문</span><span class="ct-sub">최근 8건</span></div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>주문일</th><th>채널</th><th>구매자</th><th>상품명</th><th>수량</th><th>판매가합계</th><th>정산가합계</th><th>상태</th></tr></thead>
-      <tbody id="d-list"></tbody>
-    </table></div>
-  </div>
-  <div class="card">
-    <div class="ch"><span class="ct">재고 현황</span><span class="ct-sub">안전재고 이하 강조</span></div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>SKU</th><th>상품명</th><th>라인</th><th>현재고</th><th>안전재고</th><th>재고금액</th><th>상태</th></tr></thead>
-      <tbody id="d-stock"></tbody>
-    </table></div>
-  </div>
-</div>
-
-<!-- 주문관리 -->
-<div class="sec" id="sec-order">
-  <div class="card">
-    <div class="ch"><span class="ct">주문 등록</span></div>
-    <div class="fg fg4">
-      <div class="fl"><label>주문일</label><input type="date" id="o-date"></div>
-      <div class="fl"><label>채널</label><select id="o-ch"></select></div>
-      <div class="fl"><label>구매자</label><input type="text" id="o-buyer" placeholder="이름"></div>
-      <div class="fl"><label>주문번호</label><input type="text" id="o-num" placeholder="주문번호"></div>
-    </div>
-    <div class="fg fg4">
-      <div class="fl"><label>SKU</label><select id="o-sku" onchange="onSkuChange()"></select></div>
-      <div class="fl"><label>상품명 <span style="font-size:10px;color:#1D9E75;font-weight:400">SKU선택시 자동입력</span></label><input type="text" id="o-pname" placeholder="직접 입력 또는 SKU 선택시 자동"></div>
-      <div class="fl"><label>수량 <span style="font-size:10px;color:var(--text3)">(묶음/박스 기준)</span></label><input type="number" id="o-qty" placeholder="0" min="1"></div>
-      <div class="fl"><label>판매가 (원)</label><input type="number" id="o-price" placeholder="0"></div>
-    </div>
-    <div class="fg fg4">
-      <div class="fl"><label>정산가 (원)</label><input type="number" id="o-settle" placeholder="0"></div>
-      <div class="fl"><label>출고방식</label>
-        <select id="o-ship"><option>롯데택배</option><option>CJ대한통운</option><option>한진택배</option><option>직배송</option><option>기타</option></select>
-      </div>
-      <div class="fl"><label>송장번호</label><input type="text" id="o-track" placeholder="송장번호"></div>
-      <div class="fl"><label>상태</label>
-        <select id="o-status">
-          <option value="pend">처리중</option><option value="ship">배송중</option>
-          <option value="done">완료</option><option value="can">취소/반품</option>
-        </select>
-      </div>
-    </div>
-    <div class="fg fg2">
-      <div class="fl"><label>비고</label><input type="text" id="o-note" placeholder="메모"></div>
-    </div>
-    <div class="fa"><button class="btn p" onclick="addOrder()"><i class="ti ti-plus"></i> 주문 등록</button></div>
-  </div>
-
-  <div class="sbar">
-    <div class="sbar-title"><i class="ti ti-search"></i> 주문 조회</div>
-    <div class="srow">
-      <div class="fl"><label>시작일</label><input type="date" id="of-s"></div>
-      <div class="fl"><label>종료일</label><input type="date" id="of-e"></div>
-      <div class="fl"><label>채널</label><select id="of-ch"><option value="">전체 채널</option></select></div>
-      <div class="fl"><label>SKU</label><select id="of-sku"><option value="">전체 SKU</option></select></div>
-      <div class="fl"><label>구매자 검색</label><input type="text" id="of-buyer" placeholder="이름"></div>
-      <div class="fl"><label>상태</label>
-        <select id="of-st">
-          <option value="">전체</option><option value="pend">처리중</option>
-          <option value="ship">배송중</option><option value="done">완료</option><option value="can">취소/반품</option>
-        </select>
-      </div>
-      <div class="sact">
-        <button class="btn p" onclick="renderOrders()"><i class="ti ti-search"></i> 조회</button>
-        <button class="btn ghost" onclick="resetOF()"><i class="ti ti-refresh"></i> 초기화</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="ch">
-      <span class="ct">주문 목록</span>
-      <div id="o-summary" style="font-size:12px;color:#0F6E56;font-weight:600"></div>
-    </div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>주문일</th><th>채널</th><th>구매자</th><th>상품명</th><th>수량</th><th>판매가</th><th>정산가</th><th>정산</th><th>정산일자</th><th>송장번호</th><th>상태</th><th>비고</th><th style="min-width:70px"></th></tr></thead>
-      <tbody id="o-list"></tbody>
-    </table></div>
-    <div class="cnt" id="o-cnt">총 0건</div>
-  </div>
-</div>
-
-<!-- 재고관리 -->
-<div class="sec" id="sec-stock">
-  <div class="sbar">
-    <div class="sbar-title"><i class="ti ti-search"></i> 재고 조회</div>
-    <div class="srow">
-      <div class="fl"><label>SKU / 상품명</label><input type="text" id="sf-kw" placeholder="키워드"></div>
-      <div class="fl"><label>라인</label>
-        <select id="sf-line"><option value="">전체</option><option>파인라인</option><option>시그니처소프트</option><option>팝라인</option><option>데일리</option><option>포장재</option></select>
-      </div>
-      <div class="fl"><label>상태</label>
-        <select id="sf-st"><option value="">전체</option><option value="low">부족</option><option value="zero">소진</option><option value="ok">정상</option></select>
-      </div>
-      <div class="sact">
-        <button class="btn p" onclick="renderStock()"><i class="ti ti-search"></i> 조회</button>
-        <button class="btn ghost" onclick="resetSF()"><i class="ti ti-refresh"></i> 초기화</button>
-      </div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="ch"><span class="ct">SKU 재고 현황</span><span class="ct-sub" id="s-cnt"></span></div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>SKU</th><th>상품명</th><th>라인</th><th>현재고</th><th>총입고</th><th>총출고</th><th>총로스</th><th>평균단가</th><th>재고금액</th><th>안전재고</th><th>상태</th></tr></thead>
-      <tbody id="s-list"></tbody>
-    </table></div>
-  </div>
-  <div class="card">
-    <div class="ch"><span class="ct">재고 수동 조정</span><span class="ct-sub">+입고 / -로스·조정</span></div>
-    <div class="fg fg4">
-      <div class="fl"><label>SKU</label><select id="s-sku"></select></div>
-      <div class="fl"><label>조정수량</label><input type="number" id="s-adj" placeholder="50 또는 -5"></div>
-      <div class="fl"><label>단가 (입고 시)</label><input type="number" id="s-price" placeholder="0"></div>
-      <div class="fl"><label>사유</label><input type="text" id="s-reason" placeholder="cnj타올 입고 등"></div>
-    </div>
-    <div class="fa"><button class="btn p" onclick="adjStock()"><i class="ti ti-adjustments"></i> 재고 조정</button></div>
-  </div>
-</div>
-
-<!-- 정산관리 -->
-<div class="sec" id="sec-settle">
-  <div class="card">
-    <div class="ch"><span class="ct">정산 등록</span></div>
-    <div class="fg fg5">
-      <div class="fl"><label>정산월</label><input type="month" id="st-mo"></div>
-      <div class="fl"><label>채널</label><select id="st-ch"></select></div>
-      <div class="fl"><label>매출액</label><input type="number" id="st-sales" placeholder="0" oninput="calcSt()"></div>
-      <div class="fl"><label>수수료</label><input type="number" id="st-fee" placeholder="0" oninput="calcSt()"></div>
-      <div class="fl"><label>광고비</label><input type="number" id="st-ad" placeholder="0" oninput="calcSt()"></div>
-    </div>
-    <div class="fg fg3">
-      <div class="fl"><label>기타공제</label><input type="number" id="st-etc" placeholder="0" oninput="calcSt()"></div>
-      <div class="fl"><label>실정산액 (자동)</label><input type="number" id="st-net" readonly style="background:var(--bg2)"></div>
-      <div class="fl"><label>비고</label><input type="text" id="st-note"></div>
-    </div>
-    <div class="fa"><button class="btn p" onclick="addSettle()"><i class="ti ti-plus"></i> 정산 추가</button></div>
-  </div>
-  <div class="sbar">
-    <div class="sbar-title"><i class="ti ti-search"></i> 정산 조회</div>
-    <div class="srow">
-      <div class="fl"><label>시작월</label><input type="month" id="stf-s"></div>
-      <div class="fl"><label>종료월</label><input type="month" id="stf-e"></div>
-      <div class="fl"><label>채널</label><select id="stf-ch"><option value="">전체 채널</option></select></div>
-      <div class="sact">
-        <button class="btn p" onclick="renderSettle()"><i class="ti ti-search"></i> 조회</button>
-        <button class="btn ghost" onclick="resetSTF()"><i class="ti ti-refresh"></i> 초기화</button>
-      </div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="ch"><span class="ct">정산 목록</span></div>
-    <div class="sum-bar" id="st-sum" style="display:none"></div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>정산월</th><th>채널</th><th>매출액</th><th>수수료</th><th>광고비</th><th>기타공제</th><th>실정산액</th><th>비고</th><th></th></tr></thead>
-      <tbody id="st-list"></tbody>
-    </table></div>
-  </div>
-</div>
-
-<!-- 발주관리 -->
-<div class="sec" id="sec-purchase">
-  <div class="card">
-    <div class="ch"><span class="ct">발주 등록</span></div>
-    <div class="fg fg4">
-      <div class="fl"><label>발주일</label><input type="date" id="p-date"></div>
-      <div class="fl"><label>거래처</label><input type="text" id="p-vendor" value="cnj타올"></div>
-      <div class="fl"><label>납기일</label><input type="date" id="p-due"></div>
-      <div class="fl"><label>상태</label>
-        <select id="p-st"><option value="pend">발주완료</option><option value="ship">입고중</option><option value="done">입고완료</option></select>
-      </div>
-    </div>
-    <div class="fg fg4">
-      <div class="fl"><label>SKU</label><select id="p-sku"></select></div>
-      <div class="fl"><label>발주수량</label><input type="number" id="p-qty" min="1"></div>
-      <div class="fl"><label>단가 (원)</label><input type="number" id="p-price"></div>
-      <div class="fl"><label>비고</label><input type="text" id="p-note" placeholder="카드결제(삼성) 등"></div>
-    </div>
-    <div class="fa"><button class="btn p" onclick="addPurchase()"><i class="ti ti-plus"></i> 발주 등록</button></div>
-  </div>
-  <div class="sbar">
-    <div class="sbar-title"><i class="ti ti-search"></i> 발주 조회</div>
-    <div class="srow">
-      <div class="fl"><label>시작일</label><input type="date" id="pf-s"></div>
-      <div class="fl"><label>종료일</label><input type="date" id="pf-e"></div>
-      <div class="fl"><label>SKU</label><select id="pf-sku"><option value="">전체</option></select></div>
-      <div class="fl"><label>상태</label>
-        <select id="pf-st"><option value="">전체</option><option value="pend">발주완료</option><option value="ship">입고중</option><option value="done">입고완료</option></select>
-      </div>
-      <div class="sact">
-        <button class="btn p" onclick="renderPurchase()"><i class="ti ti-search"></i> 조회</button>
-        <button class="btn ghost" onclick="resetPF()"><i class="ti ti-refresh"></i> 초기화</button>
-      </div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="ch"><span class="ct">발주 목록</span><div id="p-summary" style="font-size:12px;color:#0F6E56;font-weight:600"></div></div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>발주일</th><th>거래처</th><th>SKU</th><th>수량</th><th>단가</th><th>발주금액</th><th>납기일</th><th>상태</th><th>비고</th><th></th></tr></thead>
-      <tbody id="p-list"></tbody>
-    </table></div>
-    <div class="cnt" id="p-cnt"></div>
-  </div>
-</div>
-
-<!-- 로스관리 -->
-<div class="sec" id="sec-loss">
-  <div class="card">
-    <div class="ch"><span class="ct">로스 등록</span></div>
-    <div class="fg fg4">
-      <div class="fl"><label>발생일</label><input type="date" id="l-date"></div>
-      <div class="fl"><label>SKU</label><select id="l-sku"></select></div>
-      <div class="fl"><label>수량</label><input type="number" id="l-qty" min="1"></div>
-      <div class="fl"><label>유형</label>
-        <select id="l-type"><option value="파손">파손</option><option value="샘플">샘플출고</option><option value="반품불량">반품불량</option><option value="수량오차">수량오차</option><option value="기타">기타</option></select>
-      </div>
-    </div>
-    <div class="fg fg2">
-      <div class="fl"><label>재고차감</label>
-        <select id="l-deduct"><option value="yes">차감 (재고 줄임)</option><option value="no">이력만 기록</option></select>
-      </div>
-      <div class="fl"><label>비고</label><input type="text" id="l-note"></div>
-    </div>
-    <div class="fa"><button class="btn p" onclick="addLoss()"><i class="ti ti-plus"></i> 로스 등록</button></div>
-  </div>
-  <div class="card">
-    <div class="ch"><span class="ct">로스 이력</span><div id="l-sum" style="font-size:12px;color:#854F0B"></div></div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>발생일</th><th>SKU</th><th>상품명</th><th>수량</th><th>유형</th><th>재고차감</th><th>비고</th><th></th></tr></thead>
-      <tbody id="l-list"></tbody>
-    </table></div>
-  </div>
-</div>
-
-<!-- SKU관리 -->
-<div class="sec" id="sec-sku-mgmt">
-  <div class="card">
-    <div class="ch"><span class="ct">SKU 등록</span></div>
-    <div class="fg fg4">
-      <div class="fl"><label>SKU 코드</label><input type="text" id="sk-sku" placeholder="예) FL-BK"></div>
-      <div class="fl"><label>상품명</label><input type="text" id="sk-name"></div>
-      <div class="fl"><label>라인</label>
-        <select id="sk-line"><option>파인라인</option><option>시그니처소프트</option><option>팝라인</option><option>데일리</option><option>포장재</option><option>기타</option></select>
-      </div>
-      <div class="fl"><label>초기재고</label><input type="number" id="sk-qty" placeholder="0" min="0"></div>
-    </div>
-    <div class="fg fg3">
-      <div class="fl"><label>평균단가</label><input type="number" id="sk-price" placeholder="0"></div>
-      <div class="fl"><label>안전재고</label><input type="number" id="sk-safe" placeholder="20" min="0"></div>
-      <div class="fl"><label>비고</label><input type="text" id="sk-note"></div>
-    </div>
-    <div class="fa"><button class="btn p" onclick="addSku()"><i class="ti ti-plus"></i> SKU 추가</button></div>
-  </div>
-  <div class="card">
-    <div class="ch"><span class="ct">SKU 목록</span><span class="ct-sub" id="sku-cnt"></span></div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>SKU</th><th>상품명</th><th>라인</th><th>현재고</th><th>평균단가</th><th>안전재고</th><th>비고</th><th></th></tr></thead>
-      <tbody id="sk-list"></tbody>
-    </table></div>
-  </div>
-</div>
-
-<!-- 채널관리 -->
-<div class="sec" id="sec-ch-mgmt">
-  <div class="card">
-    <div class="ch"><span class="ct">채널 등록</span></div>
-    <div class="fg fg3">
-      <div class="fl"><label>채널명</label><input type="text" id="cm-name"></div>
-      <div class="fl"><label>수수료율 <span style="font-size:10px;color:var(--text3)">예: 10% 또는 10~15%</span></label><input type="text" id="cm-fee" placeholder="예: 8% 또는 10~15%"></div>
-      <div class="fl"><label>정산주기</label>
-        <select id="cm-cycle">
-          <option>월 1회</option><option>월 2회</option><option>월 3회</option>
-          <option>주 1회</option><option>주 2회</option>
-          <option>배송완료 후 익일</option><option>배송완료 후 3일</option><option>배송완료 후 7일</option>
-          <option>구매확정 후 익일</option><option>구매확정 후 3일</option>
-          <option>즉시정산</option><option>기타</option>
-        </select>
-      </div>
-    </div>
-    <div class="fg fg2">
-      <div class="fl"><label>담당자</label><input type="text" id="cm-contact"></div>
-      <div class="fl"><label>비고</label><input type="text" id="cm-note"></div>
-    </div>
-    <div class="fa"><button class="btn p" onclick="addChannel()"><i class="ti ti-plus"></i> 채널 추가</button></div>
-  </div>
-  <div class="card">
-    <div class="ch"><span class="ct">채널 목록</span><span class="ct-sub" id="ch-cnt"></span></div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>채널명</th><th>수수료율</th><th>정산주기</th><th>담당자</th><th>비고</th><th></th></tr></thead>
-      <tbody id="cm-list"></tbody>
-    </table></div>
-  </div>
-</div>
-
-<!-- 주문 수정 모달 -->
-<div class="modal-bg" id="order-edit-modal">
-  <div class="modal" style="max-width:600px;width:95%">
-    <div class="modal-title"><i class="ti ti-edit"></i> 주문 수정</div>
-    <input type="hidden" id="oe-id">
-    <div class="fg fg2" style="margin-bottom:8px">
-      <div class="fl"><label>주문일</label><input type="date" id="oe-date"></div>
-      <div class="fl"><label>채널</label><select id="oe-ch"></select></div>
-    </div>
-    <div class="fg fg2" style="margin-bottom:8px">
-      <div class="fl"><label>구매자</label><input type="text" id="oe-buyer"></div>
-      <div class="fl"><label>주문번호</label><input type="text" id="oe-num"></div>
-    </div>
-    <div class="fg fg2" style="margin-bottom:8px">
-      <div class="fl"><label>상품명</label><input type="text" id="oe-pname" placeholder="상품명 직접 수정 가능"></div>
-      <div class="fl"><label>SKU</label><select id="oe-sku"></select></div>
-    </div>
-    <div class="fg fg3" style="margin-bottom:8px">
-      <div class="fl"><label>수량</label><input type="number" id="oe-qty" min="1"></div>
-      <div class="fl"><label>판매가 (원)</label><input type="number" id="oe-price"></div>
-      <div class="fl"><label>정산가 (원)</label><input type="number" id="oe-settle"></div>
-    </div>
-    <div class="fg fg2" style="margin-bottom:8px">
-      <div class="fl"><label>출고방식</label>
-        <select id="oe-ship"><option>롯데택배</option><option>CJ대한통운</option><option>한진택배</option><option>직배송</option><option>기타</option></select>
-      </div>
-      <div class="fl"><label>송장번호</label><input type="text" id="oe-track"></div>
-    </div>
-    <div class="fg fg2" style="margin-bottom:8px">
-      <div class="fl"><label>정산상태</label>
-        <select id="oe-settled">
-          <option value="false">미정산</option>
-          <option value="true">정산완료</option>
-        </select>
-      </div>
-      <div class="fl"><label>입금일</label><input type="date" id="oe-settledate"></div>
-    </div>
-    <div class="fg fg2" style="margin-bottom:8px">
-      <div class="fl"><label>상태</label>
-        <select id="oe-status">
-          <option value="pend">처리중</option><option value="ship">배송중</option>
-          <option value="done">완료</option><option value="can">취소/반품</option>
-        </select>
-      </div>
-      <div class="fl"><label>비고</label><input type="text" id="oe-note"></div>
-    </div>
-    <div class="fa" style="gap:8px">
-      <button class="btn ghost" onclick="closeOrderEdit()">취소</button>
-      <button class="btn p" onclick="saveOrderEdit()"><i class="ti ti-check"></i> 저장</button>
-    </div>
-  </div>
-</div>
-
-<!-- 엑셀 모달 -->
-<div class="modal-bg" id="export-modal">
-  <div class="modal">
-    <div class="modal-title"><i class="ti ti-download"></i> 엑셀 내보내기</div>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:1rem">내보낼 항목을 선택하세요. 각각 별도 시트로 저장됩니다.</p>
-    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem">
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" id="ex-order" checked> 주문 데이터</label>
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" id="ex-stock" checked> 재고 현황</label>
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" id="ex-settle" checked> 정산 데이터</label>
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" id="ex-purchase" checked> 발주 데이터</label>
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" id="ex-loss" checked> 로스 이력</label>
-    </div>
-    <div class="fa">
-      <button class="btn" onclick="closeExport()">취소</button>
-      <button class="btn p" onclick="doExport()"><i class="ti ti-file-spreadsheet"></i> 다운로드</button>
-    </div>
-  </div>
-</div>
-
-<!-- SKU 수정 모달 -->
-<div class="modal-bg" id="sku-edit-modal">
-  <div class="modal">
-    <div class="modal-title">SKU 수정</div>
-    <input type="hidden" id="se-orig">
-    <div class="fg fg2" style="margin-bottom:8px">
-      <div class="fl"><label>SKU</label><input type="text" id="se-sku"></div>
-      <div class="fl"><label>상품명</label><input type="text" id="se-name"></div>
-    </div>
-    <div class="fg fg3" style="margin-bottom:8px">
-      <div class="fl"><label>라인</label><select id="se-line"><option>파인라인</option><option>시그니처소프트</option><option>팝라인</option><option>데일리</option><option>포장재</option><option>기타</option></select></div>
-      <div class="fl"><label>평균단가</label><input type="number" id="se-price"></div>
-      <div class="fl"><label>안전재고</label><input type="number" id="se-safe"></div>
-    </div>
-    <div class="fl" style="margin-bottom:8px"><label>비고</label><input type="text" id="se-note"></div>
-    <div class="fa"><button class="btn" onclick="closeSkuEdit()">취소</button><button class="btn p" onclick="saveSkuEdit()">저장</button></div>
-  </div>
-</div>
-
-<!-- 채널 수정 모달 -->
-<div class="modal-bg" id="ch-edit-modal">
-  <div class="modal">
-    <div class="modal-title">채널 수정</div>
-    <input type="hidden" id="ce-id">
-    <div class="fg fg2" style="margin-bottom:8px">
-      <div class="fl"><label>채널명</label><input type="text" id="ce-name"></div>
-      <div class="fl"><label>수수료율 <span style="font-size:10px;color:var(--text3)">예: 10% 또는 10~15%</span></label><input type="text" id="ce-fee" placeholder="예: 8% 또는 10~15%"></div>
-    </div>
-    <div class="fg fg2" style="margin-bottom:8px">
-      <div class="fl"><label>정산주기</label>
-        <select id="ce-cycle">
-          <option>월 1회</option><option>월 2회</option><option>월 3회</option>
-          <option>주 1회</option><option>주 2회</option>
-          <option>배송완료 후 익일</option><option>배송완료 후 3일</option><option>배송완료 후 7일</option>
-          <option>구매확정 후 익일</option><option>구매확정 후 3일</option>
-          <option>즉시정산</option><option>기타</option>
-        </select>
-      </div>
-      <div class="fl"><label>담당자</label><input type="text" id="ce-contact"></div>
-    </div>
-    <div class="fl" style="margin-bottom:8px"><label>비고</label><input type="text" id="ce-note"></div>
-    <div class="fa"><button class="btn" onclick="closeChEdit()">취소</button><button class="btn p" onclick="saveChEdit()">저장</button></div>
-  </div>
-</div>
-
-</div>
-<script>
-// ===== 초기 데이터 (실제 엑셀에서 추출) =====
-const INIT_ORDERS = [{"id": 1, "date": "2025-12-25", "channel": "샘플출고", "orderNum": "2025-12-25-1", "buyer": "가족", "productName": "아트미즈 파인라인 30수 180g 클라우드 화이트, 포크 그레이, 미드나잇 네이비 1장씩", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 2, "date": "2025-12-25", "channel": "샘플출고", "orderNum": "2025-12-25-2", "buyer": "지인", "productName": "아트미즈 파인라인 30수 180g 클라우드 화이트, 포크 그레이, 미드나잇 네이비 1장씩", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 3, "date": "2026-01-14", "channel": "직거래", "orderNum": "2026-01-14-1", "buyer": "오빠", "productName": "아트미즈 파인라인 30수 180g 클라우드 화이트, 포크 그레이, 미드나잇 네이비 1장씩", "sku": "", "qty": 5, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": "계산서 발행 x"}, {"id": 4, "date": "2026-01-14", "channel": "직거래", "orderNum": "2026-01-14-2", "buyer": "오빠", "productName": "아트미즈 시그니처 소프트 40수 200g 클래식 그레이 5장포장", "sku": "", "qty": 59, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": "납품완료"}, {"id": 5, "date": "2026-01-19", "channel": "직거래", "orderNum": "2026-01-19-01", "buyer": "양병희", "productName": "아트미즈 파인라인 30수 180g 클라우드 화이트 10장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": "개인국민계좌"}, {"id": 6, "date": "2026-01-28", "channel": "직거래", "orderNum": "2026-01-28-01", "buyer": "강현주", "productName": "아트미즈 시그니처 소프트 40수 200g 퓨어 화이트 10장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": "개인국민계좌"}, {"id": 7, "date": "2026-01-28", "channel": "직거래", "orderNum": "2026-01-28-02", "buyer": "이오녀", "productName": "아트미즈 시그니처 소프트 40수 200g 클래식 그레이 10장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": "개인국민계좌"}, {"id": 8, "date": "2026-01-28", "channel": "직거래", "orderNum": "2026-01-28-03", "buyer": "신옥경", "productName": "아트미즈 시그니처 소프트 40수 200g 딥 그레이 10장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": "개인국민계좌"}, {"id": 9, "date": "2026-01-28", "channel": "직거래", "orderNum": "2026-01-28-04", "buyer": "신옥경", "productName": "아트미즈 시그니처 소프트 40수 200g 클래식 그레이 10장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": "개인국민계좌"}, {"id": 10, "date": "2026-01-28", "channel": "샘플출고", "orderNum": "2026-01-28-1", "buyer": "가족", "productName": "아트미즈 파인라인 30수 180g 클라우드 화이트, 포크 그레이, 미드나잇 네이비 1장씩", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 11, "date": "2026-01-28", "channel": "샘플출고", "orderNum": "2026-01-28-2", "buyer": "가족", "productName": "아트미즈 파인라인 30수 180g 클라우드 화이트, 포크 그레이, 미드나잇 네이비 1장씩", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "can", "note": "반품처리"}, {"id": 12, "date": "2026-02-03", "channel": "스마트스토어", "orderNum": "2026020000000000", "buyer": "송재선", "productName": "아트미즈 파인라인 30수 180g 클라우드 화이트 10장포장", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 13, "date": "2026-02-03", "channel": "스마트스토어", "orderNum": "2026020000000000", "buyer": "송재선", "productName": "아트미즈 파인라인 30수 180g 포크 그레이 10장포장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 14, "date": "2026-02-03", "channel": "스마트스토어", "orderNum": "2026020000000000", "buyer": "송재선", "productName": "아트미즈 파인라인 30수 180g 미드나잇 네이비 10장포장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 15, "date": "2026-02-03", "channel": "샘플출고", "orderNum": "2026-02-03-01", "buyer": "송재선", "productName": "아트미즈 시그니처 소프트 40수 200g 실버 3장포장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": "명절선물"}, {"id": 16, "date": "2026-02-07", "channel": "직거래", "orderNum": "2026-02-07-1", "buyer": "아빠", "productName": "아트미즈 파인라인 30수 180g 클라우드 화이트, 포크 그레이, 미드나잇 네이비 1장씩 3장포장", "sku": "", "qty": 6, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 17, "date": "2026-02-07", "channel": "직거래", "orderNum": "2026-02-07-2", "buyer": "아빠", "productName": "아트미즈 파인라인 30수 180g 미드나잇 네이비 3장포장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 18, "date": "2026-02-10", "channel": "스마트스토어", "orderNum": "2026020000000000", "buyer": "권은숙", "productName": "아트미즈 시그니처 소프트 40수 200g 클래식 그레이 10장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 19, "date": "2026-02-10", "channel": "스마트스토어", "orderNum": "2026020000000000", "buyer": "신소영", "productName": "아트미즈 파인라인 30수 180g 포크 그레이 10장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 20, "date": "2026-02-11", "channel": "스마트스토어", "orderNum": "2026020000000000", "buyer": "박희정", "productName": "아트미즈 파인라인 30수 180g 포크 그레이 10장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "can", "note": "반품처리"}, {"id": 21, "date": "2026-02-12", "channel": "스마트스토어", "orderNum": "2026020000000000", "buyer": "정현우", "productName": "아트미즈 시그니처 소프트 40수 200g 딥 그레이, 차콜 5장씩", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": "현우 리뷰용으로 구입"}, {"id": 22, "date": "2026-02-19", "channel": "스마트스토어", "orderNum": "2026020000000000", "buyer": "최윤정", "productName": "아트미즈 파인라인 30수 180g 클라우드 화이트 4장, 포크 그레이 2장, 미드나잇 네이비 4장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "can", "note": "반품처리"}, {"id": 23, "date": "2026-02-21", "channel": "샘플출고", "orderNum": "2026-02-21-01", "buyer": "강슬기", "productName": "아트미즈 팝라인 30수 170g 아쿠아 블루 5장, 리프 그린 5장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 24, "date": "2026-02-21", "channel": "샘플출고", "orderNum": "2026-02-21-01", "buyer": "지인", "productName": "아트미즈 시그니처 소프트 40수 200g 퓨어 화이트 3장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": "스님선물"}, {"id": 25, "date": "2026-03-03", "channel": "스마트스토어", "orderNum": "2026020000000000", "buyer": "김승래", "productName": "아트미즈 시그니처 소프트 40수 200g 딥 그레이, 차콜 5장씩", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 26, "date": "2026-03-08", "channel": "11번가", "orderNum": "20260306047096178", "buyer": "정용주", "productName": "시그니처 소프트 5장:클래식 그레이-1개", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 27, "date": "2026-03-08", "channel": "11번가", "orderNum": "20260306047173610", "buyer": "조민오", "productName": "시그니처 소프트 3장:딥 그레이-1개", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 28, "date": "2026-03-08", "channel": "G마켓", "orderNum": "4414946427", "buyer": "배선명", "productName": "시그니처 소프트 40수 코마사 200g 10장:클래식 그레이/1개", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 29, "date": "2026-02-23", "channel": "스마트스토어", "orderNum": "2026022028455021", "buyer": "허정훈", "productName": "시그니처 소프트 40수 코마사 200g 10장:클래식 그레이/1개", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 30, "date": "2026-02-23", "channel": "스마트스토어", "orderNum": "2026022028455011", "buyer": "허정훈", "productName": "시그니처 소프트 40수 코마사 200g 10장:차콜/1개", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 31, "date": "2026-02-23", "channel": "스마트스토어", "orderNum": "2026022028455001", "buyer": "허정훈", "productName": "시그니처 소프트 40수 코마사 200g 10장:딥그레이/1개", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 32, "date": "2026-03-08", "channel": "11번가", "orderNum": "20260308047754061", "buyer": "이남수", "productName": "파인라인 30수 180g 5장:포크 그레이-1개", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 33, "date": "2026-03-12", "channel": "스마트스토어", "orderNum": "2026031272284601", "buyer": "백승미", "productName": "시그니처 소프트: 딥 그레이 10장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 34, "date": "2026-03-12", "channel": "스마트스토어", "orderNum": "2026031272284591", "buyer": "백승미", "productName": "시그니처 소프트: 클래식 그레이 10장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 35, "date": "2026-03-12", "channel": "스마트스토어", "orderNum": "2026031272284581", "buyer": "백승미", "productName": "시그니처 소프트: 실버 10장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 36, "date": "2026-03-13", "channel": "스마트스토어", "orderNum": "2026031280405371", "buyer": "김승래", "productName": "시그니처 소프트: 차콜 5장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 37, "date": "2026-03-13", "channel": "스마트스토어", "orderNum": "2026031280405381", "buyer": "김승래", "productName": "시그니처 소프트: 딥 그레이 5장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 38, "date": "2026-03-15", "channel": "11번가", "orderNum": "20260314049759848", "buyer": "조재경", "productName": "시그니처 소프트: 딥 그레이 9장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 39, "date": "2026-03-16", "channel": "스마트스토어", "orderNum": "2026031586906501", "buyer": "전상준", "productName": "시그니처 소프트: 딥 그레이 5장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 40, "date": "2026-03-18", "channel": "스마트스토어", "orderNum": "2026031750377701", "buyer": "김두희", "productName": "파인라인: 포크 그레이 5장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 41, "date": "2026-03-26", "channel": "kt알파쇼핑", "orderNum": "20260325085520285", "buyer": "박형인", "productName": "시그니처 소프트 40수 코마사 200g 10장:차콜/1개", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 42, "date": "2026-03-30", "channel": "11번가", "orderNum": "20260330053912407", "buyer": "최용희", "productName": "시그니처 소프트: 실버 10장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 43, "date": "2026-03-31", "channel": "스마트스토어", "orderNum": "2026033082100651", "buyer": "서진호", "productName": "시그니처 소프트: 클래식 그레이 5장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 44, "date": "2026-03-31", "channel": "지그재그", "orderNum": "139602358920125093", "buyer": "조진영", "productName": "아트미즈 팝라인 30수 170g 아쿠아 블루 5장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 45, "date": "2026-03-31", "channel": "11번가", "orderNum": "20260331054193454", "buyer": "김정숙", "productName": "시그니처 소프트: 실버 5장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 46, "date": "2026-04-01", "channel": "11번가", "orderNum": "20260401054555470", "buyer": "정주리", "productName": "아트미즈 팝라인 5장:써니 옐로우-1개", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 47, "date": "2026-04-01", "channel": "11번가", "orderNum": "20260401054672479", "buyer": "조재경", "productName": "시그니처 소프트 3장:딥 그레이 3장", "sku": "", "qty": 3, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 48, "date": "2026-04-01", "channel": "소노몰", "orderNum": "20260331O321349", "buyer": "전민경", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 실버 4장", "sku": "", "qty": 7, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 49, "date": "2026-04-03", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040220203300ZPFC", "buyer": "김소희", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 50, "date": "2026-04-03", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040217484900ZPDG", "buyer": "한서아", "productName": "팝라인 30수 170g 4장: 써니 옐로우", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 51, "date": "2026-04-03", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040212030700ZP7H", "buyer": "맹지연", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 52, "date": "2026-04-03", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040210315700ZP5A", "buyer": "이정근", "productName": "팝라인 30수 170g 4장: 코랄 레드", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 53, "date": "2026-04-03", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040315064200ZPR6", "buyer": "윤나라", "productName": "팝라인 30수 170g 4장: 써니 옐로우", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 54, "date": "2026-04-04", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040319055000ZPTZ", "buyer": "김상룡", "productName": "팝라인 30수 170g 4장: 코랄 레드", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 55, "date": "2026-04-04", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040320220900ZPUK", "buyer": "박인승", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 56, "date": "2026-04-04", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040321515100ZPVG", "buyer": "박명수", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 57, "date": "2026-04-04", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040322000800ZPVO", "buyer": "강민경", "productName": "팝라인 30수 170g 4장: 코랄 레드", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 58, "date": "2026-04-04", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040409561500ZPYM", "buyer": "박영근", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 59, "date": "2026-04-04", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040309183400ZPLM", "buyer": "심은실", "productName": "팝라인 30수 170g 4장: 코랄 레드", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 60, "date": "2026-04-04", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040418581400ZQ65", "buyer": "김수웅", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 61, "date": "2026-04-04", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040419512900ZQ6J", "buyer": "나혜영", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 62, "date": "2026-04-04", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040422564500ZQ8Q", "buyer": "양혜정", "productName": "팝라인 30수 170g 4장: 코랄 레드", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 63, "date": "2026-04-05", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040506100300ZQA1", "buyer": "윤성열", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 64, "date": "2026-04-05", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040506515000ZQA5", "buyer": "김유진", "productName": "팝라인 30수 170g 4장: 코랄 레드", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 65, "date": "2026-04-05", "channel": "11번가", "orderNum": "20260404055648514", "buyer": "서원상", "productName": "시그니처 소프트 5장:딥 그레이-1개", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 66, "date": "2026-04-05", "channel": "11번가", "orderNum": "20260404055605559", "buyer": "황현준", "productName": "파인라인 30수 180g 5장:클라우드 화이트", "sku": "", "qty": 4, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 67, "date": "2026-04-05", "channel": "11번가", "orderNum": "20260404055605559", "buyer": "황현준", "productName": "파인라인 30수 180g 5장:포크 그레이", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 68, "date": "2026-04-05", "channel": "스마트스토어", "orderNum": "2026040583791071", "buyer": "백진이", "productName": "파인라인: 클라우드 화이트 5장", "sku": "", "qty": 4, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 69, "date": "2026-04-05", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040520120000ZQIM", "buyer": "남선우", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 70, "date": "2026-04-06", "channel": "11번가", "orderNum": "20260406055952792", "buyer": "이정형", "productName": "파인라인 30수 180g 5장:미드나잇 네이비", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 71, "date": "2026-04-06", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040610134600ZQNP", "buyer": "허봉자", "productName": "팝라인 30수 170g 4장: 코랄 레드", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 72, "date": "2026-04-06", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040613091400ZQT8", "buyer": "임성권", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 73, "date": "2026-04-06", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040614094100ZQUV", "buyer": "이복형", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 74, "date": "2026-04-06", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040615142500ZQX5", "buyer": "정주연", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 75, "date": "2026-04-06", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040616120400ZQYQ", "buyer": "김수연", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 76, "date": "2026-04-06", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040617344300ZR0H", "buyer": "강대성", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 77, "date": "2026-04-06", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040618474600ZR1O", "buyer": "이보람", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 78, "date": "2026-04-06", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040618474600ZR1O", "buyer": "이보람", "productName": "팝라인 30수 170g 4장: 코랄 레드", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 79, "date": "2026-04-06", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040618474600ZR1O", "buyer": "이보람", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 80, "date": "2026-04-06", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040618474600ZR1O", "buyer": "이보람", "productName": "팝라인 30수 170g 4장: 써니 옐로우", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 81, "date": "2026-04-07", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040217484900ZPDG", "buyer": "한서아", "productName": "팝라인 30수 170g 1장 써니 옐로우", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": "파손으로 인하여 1장재출고"}, {"id": 82, "date": "2026-04-07", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040710043700ZRIX", "buyer": "이계욱", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 83, "date": "2026-04-07", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040710043700ZRIX", "buyer": "이계욱", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 84, "date": "2026-04-07", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040709335800ZRA0", "buyer": "고영미", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 85, "date": "2026-04-07", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040709085400ZR9B", "buyer": "문용배", "productName": "팝라인 30수 170g 4장: 써니 옐로우", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 86, "date": "2026-04-07", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040708422000ZR8R", "buyer": "이성하", "productName": "팝라인 30수 170g 4장: 코랄 레드", "sku": "", "qty": 3, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 87, "date": "2026-04-07", "channel": "지니웍스", "orderNum": "494753", "buyer": "정완순", "productName": "호텔수건 파인라인 30수 180g 4장 포크 그레이", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 88, "date": "2026-04-07", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040710121400ZRJM", "buyer": "변나진", "productName": "팝라인 30수 170g 4장: 써니 옐로우", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 89, "date": "2026-04-07", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040715442300ZS0K", "buyer": "신수진", "productName": "팝라인 30수 170g 4장: 써니 옐로우", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 90, "date": "2026-04-07", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040711354000ZRSZ", "buyer": "김우성", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 91, "date": "2026-04-07", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040711104700ZRQN", "buyer": "강갑석", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 92, "date": "2026-04-07", "channel": "샘플", "orderNum": "", "buyer": "정현우", "productName": "샘플", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 93, "date": "2026-04-08", "channel": "소노몰", "orderNum": "20260408O330189", "buyer": "김장배", "productName": "파인라인 8장 : 미드나잇 네이비", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 94, "date": "2026-04-08", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040723064000ZS9K", "buyer": "임현정", "productName": "팝라인 30수 170g 4장: 코랄 레드", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 95, "date": "2026-04-08", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040819582100ZST1", "buyer": "지혜리", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 96, "date": "2026-04-08", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040818210200ZSRN", "buyer": "박경화", "productName": "팝라인 30수 170g 4장: 코랄 레드", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 97, "date": "2026-04-08", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040818210200ZSRN", "buyer": "박경화", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 98, "date": "2026-04-08", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040818210200ZSRN", "buyer": "박경화", "productName": "팝라인 30수 170g 4장: 써니 옐로우", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 99, "date": "2026-04-08", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040818210200ZSRN", "buyer": "박경화", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 100, "date": "2026-04-08", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040815193900ZSNX", "buyer": "송화숙", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 101, "date": "2026-04-09", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040914220200ZT86", "buyer": "송현아", "productName": "팝라인 30수 170g 4장: 코랄 레드", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 102, "date": "2026-04-09", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040913471900ZT7B", "buyer": "위수자", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 103, "date": "2026-04-10", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040922444600ZTHF", "buyer": "양인근", "productName": "팝라인 30수 170g 4장: 코랄 레드", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 104, "date": "2026-04-10", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040922444600ZTHF", "buyer": "양인근", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 105, "date": "2026-04-10", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040922444600ZTHF", "buyer": "양인근", "productName": "팝라인 30수 170g 4장: 써니 옐로우", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 106, "date": "2026-04-10", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026040922444600ZTHF", "buyer": "양인근", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 107, "date": "2026-04-11", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026041017110900ZTTS", "buyer": "강형구", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 108, "date": "2026-04-11", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026041017110900ZTTS", "buyer": "강형구", "productName": "팝라인 30수 170g 4장: 써니 옐로우", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 109, "date": "2026-04-11", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026041017110900ZTTS", "buyer": "강형구", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 110, "date": "2026-04-11", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026041021364200ZTWI", "buyer": "민설하", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 111, "date": "2026-04-11", "channel": "w쇼핑", "orderNum": "20260411703937-001-001-001", "buyer": "최지현", "productName": "아트미즈 호텔타올 시그니처 소프트 40수 코마사 200g 퓨어 화이트 10장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 112, "date": "2026-04-12", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026041200012900ZU9U", "buyer": "양호식", "productName": "팝라인 30수 170g 4장: 써니 옐로우", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 113, "date": "2026-04-12", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026041312113500ZUPV", "buyer": "이창주", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 114, "date": "2026-04-12", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026041316152200ZUUR", "buyer": "조진상", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 115, "date": "2026-04-12", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026041405450500ZV2N", "buyer": "배현미", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 116, "date": "2026-04-12", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026041416570900ZVJX", "buyer": "이준길", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 117, "date": "2026-04-12", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026041410391300ZVA6", "buyer": "이창민", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 118, "date": "2026-04-12", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026041409463900ZV4K", "buyer": "정용기", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 119, "date": "2026-04-12", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026041420482000ZVN7", "buyer": "김종석", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 120, "date": "2026-04-15", "channel": "sk스토아", "orderNum": "20260415290952-001-001-001", "buyer": "강슬기", "productName": "샘플", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 121, "date": "2026-04-15", "channel": "sk스토아", "orderNum": "20260415299640-001-001-001", "buyer": "박경옥", "productName": "샘플", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 122, "date": "2026-04-15", "channel": "sk스토아", "orderNum": "20260415301634-001-001-001", "buyer": "유영숙", "productName": "아트미즈 시그니처 소프트 10장 클래식 그레이", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 123, "date": "2026-04-15", "channel": "sk스토아", "orderNum": "20260415304868-001-001-001", "buyer": "이혜연", "productName": "아트미즈 시그니처 소프트 10장 딥 그레이", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 124, "date": "2026-04-16", "channel": "sk스토아", "orderNum": "20260415308877-001-001-001", "buyer": "문연지", "productName": "아트미즈 시그니처 소프트 10장 클래식 그레이", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 125, "date": "2026-04-16", "channel": "sk스토아", "orderNum": "20260415311275-001-001-001", "buyer": "정현우", "productName": "샘플", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 126, "date": "2026-04-16", "channel": "sk스토아", "orderNum": "20260415325901-001-001-001", "buyer": "김동은", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 클래식 그레이", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 127, "date": "2026-04-16", "channel": "sk스토아", "orderNum": "20260415332659-001-001-001", "buyer": "구민경", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 실버", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 128, "date": "2026-04-16", "channel": "sk스토아", "orderNum": "20260415334769-001-001-001", "buyer": "김인영", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 딥 그레이", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 129, "date": "2026-04-16", "channel": "sk스토아", "orderNum": "20260415342397-001-001-001", "buyer": "류영희", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 실버", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 130, "date": "2026-04-16", "channel": "sk스토아", "orderNum": "20260416405278-001-001-001", "buyer": "박영미", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 퓨어 화이트", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 131, "date": "2026-04-16", "channel": "소노몰", "orderNum": "20260415O343249", "buyer": "임경환", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 4장 클래식 그레이", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 132, "date": "2026-04-17", "channel": "sk스토아", "orderNum": "20260416435701-001-001-001", "buyer": "조옥희", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 차콜", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 133, "date": "2026-04-17", "channel": "w쇼핑", "orderNum": "20260417243193-001-001-001", "buyer": "김현주", "productName": "아트미즈 호텔타올 시그니처 소프트 40수 코마사 200g 딥 그레이 3장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 134, "date": "2026-04-17", "channel": "sk스토아", "orderNum": "20260417077947-001-001-001", "buyer": "해맑은소아청소년과의원", "productName": "아트미즈 호텔타올 파인라인 국내생산 30수 180g 5장 클라우드 화이트", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 135, "date": "2026-04-19", "channel": "소노몰", "orderNum": "20260419O346639", "buyer": "방보현", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 4장 실버", "sku": "", "qty": 3, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 136, "date": "2026-04-20", "channel": "비즈마켓_더캠프몰", "orderNum": "M2604K620600791818", "buyer": "이한천", "productName": "아트미즈 팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 3, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 137, "date": "2026-04-20", "channel": "비즈마켓_더캠프몰", "orderNum": "M2604K620600791290", "buyer": "이정화", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 138, "date": "2026-04-20", "channel": "비즈마켓_더캠프몰", "orderNum": "M2604K620600791290", "buyer": "이정화", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 139, "date": "2026-04-20", "channel": "비즈마켓_더캠프몰", "orderNum": "M2604K620600790984", "buyer": "강*모", "productName": "팝라인 30수 170g 4장: 써니 옐로우", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 140, "date": "2026-04-21", "channel": "11번가", "orderNum": "20260421060804539", "buyer": "임병섭", "productName": "파인라인 30수 180g 10장:포크 그레이", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 141, "date": "2026-04-22", "channel": "소노몰", "orderNum": "20260421O349949", "buyer": "이상현", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 8장 퓨어 화이트", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 142, "date": "2026-04-23", "channel": "비즈마켓_타임딜", "orderNum": "M2604K460600830247", "buyer": "이지영", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 143, "date": "2026-04-23", "channel": "소노몰", "orderNum": "20260422O352759", "buyer": "이인일", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 4장 딥 그레이", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 144, "date": "2026-04-26", "channel": "sk스토아", "orderNum": "20260425757298-001-001-001", "buyer": "이영식", "productName": "아트미즈 호텔타올 파인라인 국내생산 30수 180g 10장 포크 그레이", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 145, "date": "2026-04-29", "channel": "11번가", "orderNum": "20260429062673861", "buyer": "유기남", "productName": "파인라인 30수 180g 5장:클라우드 화이트", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 146, "date": "2026-04-29", "channel": "11번가", "orderNum": "20260429062685537", "buyer": "이승우", "productName": "시그니처 소프트 10장 실버", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 147, "date": "2026-04-29", "channel": "11번가", "orderNum": "20260429062685699", "buyer": "이승우", "productName": "시그니처 소프트 10장 실버", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 148, "date": "2026-04-29", "channel": "11번가", "orderNum": "20260429062685885", "buyer": "이승우", "productName": "시그니처 소프트 10장 실버", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 149, "date": "2026-04-29", "channel": "11번가", "orderNum": "20260429062686027", "buyer": "이승우", "productName": "시그니처 소프트 10장 실버", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 150, "date": "2026-04-30", "channel": "11번가", "orderNum": "20260430062954709", "buyer": "황인철", "productName": "아트미즈 시그니처 소프트 호텔타올 국내생산 40수 코마사 200g 10장 딥그레이", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 151, "date": "2026-05-01", "channel": "유니버스코리아", "orderNum": "U261210270697", "buyer": "이승현", "productName": "아트미즈 호텔타올 시그니처 소프트 국내생산 40수 코마사 200g 8장 딥 그레이", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 152, "date": "2026-05-01", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026043013312501026F", "buyer": "이은아", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 153, "date": "2026-05-01", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026043013312501026F", "buyer": "이은아", "productName": "팝라인 30수 170g 4장: 써니 옐로우", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 154, "date": "2026-05-01", "channel": "11번가", "orderNum": "20260501063306744", "buyer": "안재연", "productName": "파인라인 30수 180g 5장:미드나잇 네이비", "sku": "", "qty": 2, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 155, "date": "2026-05-03", "channel": "11번가", "orderNum": "20260502063565152", "buyer": "최형진", "productName": "아트미즈 팝라인 5장:코랄 레드-1개", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 156, "date": "2026-05-03", "channel": "파손", "orderNum": "2026-05-04-01", "buyer": "파손", "productName": "팝라인 리프 그린 1장, 써니 옐로우 1장 / 시그니처 소프트 딥 그레이 1장", "sku": "", "qty": 1, "price": 0, "settle": 0, "ship": "롯데택배", "track": "", "status": "done", "note": ""}, {"id": 157, "date": "2026-05-04", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026050416282801033H", "buyer": "임현정", "productName": "팝라인 30수 170g 4장: 아쿠아 블루", "sku": "", "qty": 1, "price": 15900, "settle": 13992, "ship": "롯데택배", "track": "261414210971", "status": "done", "note": ""}, {"id": 158, "date": "2026-05-04", "channel": "비즈마켓_우리WON마켓", "orderNum": "A2026050416282801033H", "buyer": "임현정", "productName": "팝라인 30수 170g 4장: 리프 그린", "sku": "", "qty": 1, "price": 15900, "settle": 13992, "ship": "롯데택배", "track": "261414210971", "status": "done", "note": ""}, {"id": 159, "date": "2026-05-06", "channel": "sk스토아", "orderNum": "20260506440408-001-001-001", "buyer": "강슬기", "productName": "샘플", "sku": "", "qty": 1, "price": 658500, "settle": 592650, "ship": "롯데택배", "track": "261414220480", "status": "done", "note": ""}, {"id": 160, "date": "2026-05-06", "channel": "sk스토아", "orderNum": "20260506441990-001-001-001", "buyer": "안경모", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 국내생산 프리미엄 호텔수건 실버", "sku": "", "qty": 1, "price": 43900, "settle": 39510, "ship": "롯데택배", "track": "261414220491", "status": "done", "note": ""}, {"id": 161, "date": "2026-05-06", "channel": "sk스토아", "orderNum": "20260506451691-001-001-001", "buyer": "임계순", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 국내생산 프리미엄 호텔수건 퓨어 화이트", "sku": "", "qty": 1, "price": 43900, "settle": 39510, "ship": "롯데택배", "track": "261414227034", "status": "done", "note": ""}, {"id": 162, "date": "2026-05-06", "channel": "sk스토아", "orderNum": "20260506452145-001-001-001", "buyer": "정현우", "productName": "샘플", "sku": "", "qty": 5, "price": 219500, "settle": 197550, "ship": "롯데택배", "track": "261414227045", "status": "done", "note": ""}, {"id": 163, "date": "2026-05-06", "channel": "sk스토아", "orderNum": "20260506453001-001-001-001", "buyer": "이동익", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 국내생산 프리미엄 호텔수건 딥 그레이", "sku": "", "qty": 1, "price": 43900, "settle": 39510, "ship": "롯데택배", "track": "261414227056", "status": "done", "note": ""}, {"id": 164, "date": "2026-05-06", "channel": "sk스토아", "orderNum": "20260506452649-001-001-001", "buyer": "이정빈", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 국내생산 프리미엄 호텔수건 딥 그레이", "sku": "", "qty": 2, "price": 87800, "settle": 79020, "ship": "롯데택배", "track": "261414227060", "status": "done", "note": ""}, {"id": 165, "date": "2026-05-06", "channel": "sk스토아", "orderNum": "20260506455505-001-001-001", "buyer": "황보동욱", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 국내생산 프리미엄 호텔수건 딥 그레이", "sku": "", "qty": 1, "price": 43900, "settle": 39510, "ship": "롯데택배", "track": "261414227071", "status": "done", "note": ""}, {"id": 166, "date": "2026-05-06", "channel": "sk스토아", "orderNum": "20260506456188-001-001-001", "buyer": "김진원", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 국내생산 프리미엄 호텔수건 차콜", "sku": "", "qty": 1, "price": 43900, "settle": 39510, "ship": "롯데택배", "track": "261414227082", "status": "done", "note": ""}, {"id": 167, "date": "2026-05-07", "channel": "sk스토아", "orderNum": "20260506472164-001-001-001", "buyer": "이화섭", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 국내생산 프리미엄 호텔수건 퓨어 화이트", "sku": "", "qty": 1, "price": 43900, "settle": 39510, "ship": "롯데택배", "track": "261414229554", "status": "done", "note": ""}, {"id": 168, "date": "2026-05-07", "channel": "sk스토아", "orderNum": "20260507531232-002-001-001", "buyer": "한희정", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 국내생산 프리미엄 호텔수건 딥 그레이", "sku": "", "qty": 1, "price": 43900, "settle": 39510, "ship": "롯데택배", "track": "261414229565", "status": "done", "note": ""}, {"id": 169, "date": "2026-05-07", "channel": "sk스토아", "orderNum": "20260507531439-001-001-001", "buyer": "이대정", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 국내생산 프리미엄 호텔수건 차콜", "sku": "", "qty": 1, "price": 43900, "settle": 39510, "ship": "롯데택배", "track": "261414229576", "status": "done", "note": ""}, {"id": 170, "date": "2026-05-07", "channel": "sk스토아", "orderNum": "20260507531715-001-001-001", "buyer": "조유미", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 국내생산 프리미엄 호텔수건 실버", "sku": "", "qty": 1, "price": 43900, "settle": 39510, "ship": "롯데택배", "track": "261414229580", "status": "done", "note": ""}, {"id": 171, "date": "2026-05-07", "channel": "sk스토아", "orderNum": "20260507537575-001-001-001", "buyer": "이연주", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 국내생산 프리미엄 호텔수건 클래식 그레이", "sku": "", "qty": 1, "price": 43900, "settle": 39510, "ship": "롯데택배", "track": "261414230873", "status": "done", "note": ""}, {"id": 172, "date": "2026-05-07", "channel": "sk스토아", "orderNum": "20260507541021-001-001-001", "buyer": "이문기", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 국내생산 프리미엄 호텔수건 차콜", "sku": "", "qty": 1, "price": 43900, "settle": 39510, "ship": "롯데택배", "track": "261414230884", "status": "done", "note": ""}, {"id": 173, "date": "2026-05-08", "channel": "sk스토아", "orderNum": "20260507542991-001-001-001", "buyer": "김지현", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 국내생산 프리미엄 호텔수건 클래식 그레이", "sku": "", "qty": 1, "price": 43900, "settle": 39510, "ship": "롯데택배", "track": "261414231352", "status": "done", "note": ""}, {"id": 174, "date": "2026-05-08", "channel": "sk스토아", "orderNum": "20260507543071-001-001-001", "buyer": "김지현", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 국내생산 프리미엄 호텔수건 클래식 그레이", "sku": "", "qty": 1, "price": 43900, "settle": 39510, "ship": "롯데택배", "track": "261414231352", "status": "done", "note": ""}, {"id": 175, "date": "2026-05-08", "channel": "sk스토아", "orderNum": "20260507544117-001-001-001", "buyer": "장희준", "productName": "아트미즈 시그니처 소프트 40수 코마사 200g 10장 국내생산 프리미엄 호텔수건 실버", "sku": "", "qty": 1, "price": 43900, "settle": 39510, "ship": "롯데택배", "track": "261414231363", "status": "done", "note": ""},{"id":176,"date":"2026-05-08","channel":"11번가","buyer":"손창수","orderNum":"","productName":"아트미즈 호텔타올 파인라인 국내생산 30수 180g 미드나잇 네이비 5장","sku":"FL-MN","qty":5,"price":23600,"settle":21382,"ship":"롯데택배","track":"","status":"done","note":"","settled":false,"settleDate":""},{"id":177,"date":"2026-05-07","channel":"비즈마켓_우리WON마켓","buyer":"신수진","orderNum":"","productName":"아트미즈 팝라인 AP-SY 8장","sku":"AP-SY","qty":8,"price":31800,"settle":27984,"ship":"롯데택배","track":"","status":"done","note":"","settled":false,"settleDate":""}];
-const INIT_STOCKS = [{"sku": "FL-CW", "name": "파인라인 클라우드 화이트", "line": "파인라인", "qty": 40, "inQty": 130, "outQty": 99, "lossQty": 0, "avgPrice": 2838.46, "safe": 0, "note": ""}, {"sku": "FL-FG", "name": "파인라인 포크 그레이", "line": "파인라인", "qty": 27, "inQty": 110, "outQty": 86, "lossQty": 0, "avgPrice": 2827.27, "safe": 0, "note": ""}, {"sku": "FL-MN", "name": "파인라인 미드나잇 네이비", "line": "파인라인", "qty": 60, "inQty": 110, "outQty": 55, "lossQty": 0, "avgPrice": 2827.27, "safe": 0, "note": ""}, {"sku": "SS-PW", "name": "시그니처 소프트 퓨어 화이트", "line": "시그니처소프트", "qty": 59, "inQty": 120, "outQty": 61, "lossQty": 0, "avgPrice": 3200.0, "safe": 0, "note": ""}, {"sku": "SS-CG", "name": "시그니처 소프트 클래식 그레이", "line": "시그니처소프트", "qty": 83, "inQty": 520, "outQty": 429, "lossQty": 0, "avgPrice": 3200.0, "safe": 0, "note": ""}, {"sku": "SS-SV", "name": "시그니처 소프트 실버", "line": "시그니처소프트", "qty": 62, "inQty": 220, "outQty": 158, "lossQty": 0, "avgPrice": 3200.0, "safe": 0, "note": ""}, {"sku": "SS-DG", "name": "시그니처 소프트 딥 그레이", "line": "시그니처소프트", "qty": 47, "inQty": 220, "outQty": 172, "lossQty": 0, "avgPrice": 3200.0, "safe": 0, "note": ""}, {"sku": "SS-CC", "name": "시그니처 소프트 차콜", "line": "시그니처소프트", "qty": 65, "inQty": 150, "outQty": 85, "lossQty": 0, "avgPrice": 3200.0, "safe": 0, "note": ""}, {"sku": "BOX-5장(손잡이)", "name": "포장 - 5장 손잡이박스", "line": "포장재", "qty": 5, "inQty": 70, "outQty": 67, "lossQty": 0, "avgPrice": 2040.0, "safe": 0, "note": ""}, {"sku": "BOX-3장(손잡이)", "name": "포장 - 3장 손잡이박스", "line": "포장재", "qty": 3, "inQty": 10, "outQty": 8, "lossQty": 0, "avgPrice": 1820.0, "safe": 0, "note": ""}, {"sku": "3장투명비닐", "name": "포장 - 3장 투명비닐", "line": "포장재", "qty": 0, "inQty": 0, "outQty": 0, "lossQty": 0, "avgPrice": 0, "safe": 0, "note": ""}, {"sku": "3장택배봉투", "name": "포장 - 3장 택배봉투", "line": "포장재", "qty": 0, "inQty": 0, "outQty": 0, "lossQty": 0, "avgPrice": 0, "safe": 0, "note": ""}, {"sku": "5장투명비닐", "name": "포장 - 5장 투명비닐", "line": "포장재", "qty": 200, "inQty": 200, "outQty": 0, "lossQty": 0, "avgPrice": 110.0, "safe": 0, "note": ""}, {"sku": "10장택배봉투", "name": "포장 - 10장 택배봉투", "line": "포장재", "qty": 100, "inQty": 100, "outQty": 0, "lossQty": 0, "avgPrice": 145.0, "safe": 0, "note": ""}, {"sku": "발주택배비", "name": "발주 - 택배비", "line": "포장재", "qty": 0, "inQty": 0, "outQty": 0, "lossQty": 0, "avgPrice": 0, "safe": 0, "note": ""}, {"sku": "AP-CR", "name": "팝라인 코랄 레드", "line": "팝라인", "qty": 77, "inQty": 150, "outQty": 73, "lossQty": 0, "avgPrice": 2616.67, "safe": 0, "note": ""}, {"sku": "AP-SY", "name": "팝라인 써니 옐로우", "line": "팝라인", "qty": 87, "inQty": 150, "outQty": 63, "lossQty": 0, "avgPrice": 2616.67, "safe": 0, "note": ""}, {"sku": "AP-AB", "name": "팝라인 아쿠아 블루", "line": "팝라인", "qty": 46, "inQty": 200, "outQty": 154, "lossQty": 0, "avgPrice": 2650.0, "safe": 0, "note": ""}, {"sku": "AP-LG", "name": "팝라인 리프 그린", "line": "팝라인", "qty": 52, "inQty": 150, "outQty": 98, "lossQty": 0, "avgPrice": 2616.67, "safe": 0, "note": ""}, {"sku": "AD-OW", "name": "데일리 오프 화이트", "line": "데일리", "qty": 0, "inQty": 0, "outQty": 0, "lossQty": 0, "avgPrice": 0, "safe": 0, "note": ""}, {"sku": "AD-MG", "name": "데일리 미스트 그레이", "line": "데일리", "qty": 0, "inQty": 0, "outQty": 0, "lossQty": 0, "avgPrice": 0, "safe": 0, "note": ""}, {"sku": "AD-WB", "name": "데일리 웜 베이지", "line": "데일리", "qty": 0, "inQty": 0, "outQty": 0, "lossQty": 0, "avgPrice": 0, "safe": 0, "note": ""}, {"sku": "AD-DC", "name": "데일리 더스트 차콜", "line": "데일리", "qty": 0, "inQty": 0, "outQty": 0, "lossQty": 0, "avgPrice": 0, "safe": 0, "note": ""}];
-const INIT_SETTLES = [];
-// localStorage에 기존 잘못된 정산 데이터 강제 초기화
-(function(){const s=localStorage.getItem('atm_settles');if(s){const arr=JSON.parse(s);if(arr&&arr.length>0&&arr[0].id===20000){localStorage.removeItem('atm_settles');}}})();
-let settles  = JSON.parse(localStorage.getItem('atm_settles'))   || INIT_SETTLES;
-
-const DEFAULT_CHANNELS=[
-  {id:1,name:'스마트스토어',fee:5.5,cycle:'월 2회',contact:'',note:''},
-  {id:2,name:'쿠팡',fee:10.8,cycle:'주 1회',contact:'',note:''},
-  {id:3,name:'11번가',fee:8.0,cycle:'월 2회',contact:'',note:''},
-  {id:4,name:'G마켓',fee:9.0,cycle:'월 2회',contact:'',note:''},
-  {id:5,name:'sk스토아',fee:30.0,cycle:'월 1회',contact:'',note:'홈쇼핑'},
-  {id:6,name:'소노몰',fee:15.0,cycle:'월 1회',contact:'',note:''},
-  {id:7,name:'비즈마켓_우리WON마켓',fee:10.0,cycle:'월 1회',contact:'',note:''},
-  {id:8,name:'비즈마켓_더캠프몰',fee:10.0,cycle:'월 1회',contact:'',note:''},
-  {id:9,name:'비즈마켓_타임딜',fee:10.0,cycle:'월 1회',contact:'',note:''},
-  {id:10,name:'w쇼핑',fee:30.0,cycle:'월 1회',contact:'',note:'홈쇼핑'},
-  {id:11,name:'kt알파쇼핑',fee:30.0,cycle:'월 1회',contact:'',note:'홈쇼핑'},
-  {id:12,name:'유니버스코리아',fee:12.0,cycle:'월 1회',contact:'',note:''},
-  {id:13,name:'지니웍스',fee:12.0,cycle:'월 1회',contact:'',note:''},
-  {id:14,name:'지그재그',fee:5.0,cycle:'월 2회',contact:'',note:''},
-  {id:15,name:'직거래',fee:0,cycle:'즉시정산',contact:'',note:''},
-  {id:16,name:'샘플출고',fee:0,cycle:'즉시정산',contact:'',note:''},
-  {id:17,name:'자사몰',fee:0,cycle:'즉시정산',contact:'',note:''},
-  {id:18,name:'기타',fee:0,cycle:'기타',contact:'',note:''},
-];
-
-const SM={pend:'처리중',ship:'배송중',done:'완료',can:'취소/반품'};
-const SC={pend:'bd-pend',ship:'bd-ship',done:'bd-done',can:'bd-can'};
-const PSM={pend:'발주완료',ship:'입고중',done:'입고완료'};
-
-// localStorage에서 불러오거나 초기 데이터 사용
-const _rawOrders = JSON.parse(localStorage.getItem('atm_orders'));
-let orders = (_rawOrders && _rawOrders.length > 0) ? _rawOrders : INIT_ORDERS;
-const _rawStocks = JSON.parse(localStorage.getItem('atm_stocks'));
-let stocks = (_rawStocks && _rawStocks.length > 0) ? _rawStocks : INIT_STOCKS.map(s=>({...s}));
-const INIT_PURCHASES = [{"id":10001,"date":"2025-12-10","vendor":"cnj타올","sku":"FL-CW","qty":40,"price":2700,"due":"2025-12-10","status":"done","note":"입금 / 26년 1월 계산서발행"},{"id":10002,"date":"2025-12-10","vendor":"cnj타올","sku":"FL-FG","qty":40,"price":2700,"due":"2025-12-10","status":"done","note":""},{"id":10003,"date":"2025-12-10","vendor":"cnj타올","sku":"FL-MN","qty":40,"price":2700,"due":"2025-12-10","status":"done","note":""},{"id":10004,"date":"2025-12-10","vendor":"cnj타올","sku":"SS-PW","qty":20,"price":3200,"due":"2025-12-10","status":"done","note":""},{"id":10005,"date":"2025-12-10","vendor":"cnj타올","sku":"SS-CG","qty":20,"price":3200,"due":"2025-12-10","status":"done","note":""},{"id":10006,"date":"2025-12-10","vendor":"cnj타올","sku":"SS-SV","qty":20,"price":3200,"due":"2025-12-10","status":"done","note":""},{"id":10007,"date":"2025-12-10","vendor":"cnj타올","sku":"SS-DG","qty":20,"price":3200,"due":"2025-12-10","status":"done","note":""},{"id":10008,"date":"2026-01-16","vendor":"와니유니홈(스마트스토어)","sku":"BOX-5장(손잡이)","qty":60,"price":2040,"due":"2026-01-16","status":"done","note":"카드결제 (국민)"},{"id":10009,"date":"2026-01-23","vendor":"cnj타올","sku":"SS-CG","qty":300,"price":3200,"due":"2026-01-23","status":"done","note":"카드결제 (삼성)"},{"id":10010,"date":"2026-01-29","vendor":"와니유니홈(스마트스토어)","sku":"BOX-3장(손잡이)","qty":10,"price":1820,"due":"2026-01-29","status":"done","note":"카드결제 (삼성)"},{"id":10011,"date":"2026-02-03","vendor":"와니유니홈(스마트스토어)","sku":"BOX-5장(손잡이)","qty":10,"price":2040,"due":"2026-02-03","status":"done","note":"카드결제 (삼성)"},{"id":10012,"date":"2026-02-03","vendor":"박스몰","sku":"5장투명비닐","qty":200,"price":110,"due":"2026-02-03","status":"done","note":"3190원 택배비"},{"id":10013,"date":"2026-02-03","vendor":"박스몰","sku":"10장택배봉투","qty":100,"price":145,"due":"2026-02-03","status":"done","note":"카드결제 (삼성)"},{"id":10014,"date":"2026-02-11","vendor":"cnj타올","sku":"SS-PW","qty":50,"price":3200,"due":"2026-02-11","status":"done","note":"카드결제 (삼성)"},{"id":10015,"date":"2026-02-11","vendor":"cnj타올","sku":"SS-CG","qty":50,"price":3200,"due":"2026-02-11","status":"done","note":"카드결제 (삼성)"},{"id":10016,"date":"2026-02-11","vendor":"cnj타올","sku":"SS-CC","qty":50,"price":3200,"due":"2026-02-11","status":"done","note":"카드결제 (삼성)"},{"id":10017,"date":"2026-02-11","vendor":"cnj타올","sku":"AP-SY","qty":50,"price":2550,"due":"2026-02-11","status":"done","note":"카드결제 (삼성)"},{"id":10018,"date":"2026-02-11","vendor":"cnj타올","sku":"AP-AB","qty":50,"price":2550,"due":"2026-02-11","status":"done","note":"카드결제 (삼성)"},{"id":10019,"date":"2026-02-11","vendor":"cnj타올","sku":"AP-LG","qty":50,"price":2550,"due":"2026-02-11","status":"done","note":"카드결제 (삼성)"},{"id":10020,"date":"2026-02-23","vendor":"cnj타올","sku":"FL-CW","qty":40,"price":2900,"due":"2026-02-23","status":"done","note":"카드결제 (삼성)"},{"id":10021,"date":"2026-02-23","vendor":"cnj타올","sku":"FL-FG","qty":20,"price":2900,"due":"2026-02-23","status":"done","note":"카드결제 (삼성)"},{"id":10022,"date":"2026-02-23","vendor":"cnj타올","sku":"FL-MN","qty":20,"price":2900,"due":"2026-02-23","status":"done","note":"카드결제 (삼성)"},{"id":10023,"date":"2026-02-23","vendor":"cnj타올","sku":"SS-SV","qty":50,"price":3200,"due":"2026-02-23","status":"done","note":"카드결제 (삼성)"},{"id":10024,"date":"2026-02-23","vendor":"cnj타올","sku":"SS-DG","qty":50,"price":3200,"due":"2026-02-23","status":"done","note":"카드결제 (삼성)"},{"id":10025,"date":"2026-02-23","vendor":"cnj타올","sku":"AP-CR","qty":20,"price":2550,"due":"2026-02-23","status":"done","note":"카드결제 (삼성)"},{"id":10026,"date":"2026-02-23","vendor":"cnj타올","sku":"SS-CC","qty":50,"price":3200,"due":"2026-02-23","status":"done","note":"카드결제 (삼성)"},{"id":10027,"date":"2026-03-12","vendor":"cnj타올","sku":"SS-CG","qty":100,"price":3200,"due":"2026-03-12","status":"done","note":"카드결제 (삼성)"},{"id":10028,"date":"2026-03-12","vendor":"cnj타올","sku":"SS-DG","qty":50,"price":3200,"due":"2026-03-12","status":"done","note":"카드결제 (삼성)"},{"id":10029,"date":"2026-04-03","vendor":"cnj타올","sku":"AP-SY","qty":50,"price":2550,"due":"2026-04-03","status":"done","note":"카드결제 (삼성)"},{"id":10030,"date":"2026-04-03","vendor":"cnj타올","sku":"AP-AB","qty":50,"price":2550,"due":"2026-04-03","status":"done","note":"카드결제 (삼성)"},{"id":10031,"date":"2026-04-03","vendor":"cnj타올","sku":"AP-LG","qty":50,"price":2550,"due":"2026-04-03","status":"done","note":"카드결제 (삼성)"},{"id":10032,"date":"2026-04-03","vendor":"cnj타올","sku":"AP-CR","qty":30,"price":2550,"due":"2026-04-03","status":"done","note":"카드결제 (삼성)"},{"id":10033,"date":"2026-04-03","vendor":"cnj타올","sku":"SS-CG","qty":50,"price":3200,"due":"2026-04-03","status":"done","note":"카드결제 (삼성)"},{"id":10034,"date":"2026-04-03","vendor":"cnj타올","sku":"SS-DG","qty":50,"price":3200,"due":"2026-04-03","status":"done","note":"카드결제 (삼성)"},{"id":10035,"date":"2026-04-03","vendor":"cnj타올","sku":"SS-SV","qty":50,"price":3200,"due":"2026-04-03","status":"done","note":"카드결제 (삼성)"},{"id":10036,"date":"2026-04-10","vendor":"cnj타올","sku":"AP-AB","qty":100,"price":2750,"due":"2026-04-10","status":"done","note":"카드결제 (삼성)"},{"id":10037,"date":"2026-04-10","vendor":"cnj타올","sku":"AP-CR","qty":50,"price":2750,"due":"2026-04-10","status":"done","note":"카드결제 (삼성)"},{"id":10038,"date":"2026-04-10","vendor":"cnj타올","sku":"AP-LG","qty":50,"price":2750,"due":"2026-04-10","status":"done","note":"카드결제 (삼성)"},{"id":10039,"date":"2026-04-10","vendor":"cnj타올","sku":"AP-SY","qty":50,"price":2750,"due":"2026-04-10","status":"done","note":"카드결제 (삼성)"},{"id":10040,"date":"2026-04-10","vendor":"cnj타올","sku":"AP-CR","qty":50,"price":2550,"due":"2026-04-10","status":"done","note":"카드결제 (삼성)"},{"id":10041,"date":"2026-04-10","vendor":"cnj타올","sku":"FL-CW","qty":50,"price":2900,"due":"2026-04-10","status":"done","note":"카드결제 (삼성)"},{"id":10042,"date":"2026-04-10","vendor":"cnj타올","sku":"FL-FG","qty":50,"price":2900,"due":"2026-04-10","status":"done","note":"카드결제 (삼성)"},{"id":10043,"date":"2026-04-10","vendor":"cnj타올","sku":"FL-MN","qty":50,"price":2900,"due":"2026-04-10","status":"done","note":"카드결제 (삼성)"},{"id":10044,"date":"2026-04-29","vendor":"cnj타올","sku":"SS-PW","qty":50,"price":3200,"due":"2026-04-29","status":"done","note":"카드결제 (삼성)"},{"id":10045,"date":"2026-04-29","vendor":"cnj타올","sku":"SS-DG","qty":50,"price":3200,"due":"2026-04-29","status":"done","note":"카드결제 (삼성)"},{"id":10046,"date":"2026-04-29","vendor":"cnj타올","sku":"SS-SV","qty":100,"price":3200,"due":"2026-04-29","status":"done","note":"카드결제 (삼성)"},{"id":10047,"date":"2026-04-29","vendor":"cnj타올","sku":"SS-CC","qty":50,"price":3200,"due":"2026-04-29","status":"done","note":"카드결제 (삼성)"}];
-const _rawPurchases = JSON.parse(localStorage.getItem('atm_purchases'));
-let purchases = (_rawPurchases && _rawPurchases.length > 0) ? _rawPurchases : INIT_PURCHASES;
-let losses   = JSON.parse(localStorage.getItem('atm_losses'))    || [];
-let channels = JSON.parse(localStorage.getItem('atm_channels'))  || DEFAULT_CHANNELS.map(c=>({...c}));
-
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbyYRnDpYUimZXIXRrh591QkaEccYJ2y9KeujWT-woEOkL2-vyI5hdCSxA93o8HMHR_g/exec';
-let _saving = false;
-let _saveQueue = false;
-
-function save(){
-  // localStorage 백업
-  localStorage.setItem('atm_orders',JSON.stringify(orders));
-  localStorage.setItem('atm_stocks',JSON.stringify(stocks));
-  localStorage.setItem('atm_settles',JSON.stringify(settles));
-  localStorage.setItem('atm_purchases',JSON.stringify(purchases));
-  localStorage.setItem('atm_losses',JSON.stringify(losses));
-  localStorage.setItem('atm_channels',JSON.stringify(channels));
-  // 구글 시트 저장 (비동기)
-  syncToSheet();
-}
-
-function syncToSheet(){
-  if(_saving){ _saveQueue=true; return; }
-  _saving = true;
-  showSyncStatus('저장 중...');
-  fetch(GAS_URL, {
-    method:'POST',
-    body: JSON.stringify({
-      action:'saveAll',
-      data:{ orders, stocks, settles, purchases, losses, channels }
-    })
-  })
-  .then(r=>r.json())
-  .then(res=>{
-    _saving=false;
-    if(res.ok) showSyncStatus('✓ 저장됨', true);
-    else showSyncStatus('저장 오류: '+res.message, false, true);
-    if(_saveQueue){ _saveQueue=false; syncToSheet(); }
-  })
-  .catch(err=>{
-    _saving=false;
-    showSyncStatus('연결 오류 (로컬 저장됨)', false, true);
-    if(_saveQueue){ _saveQueue=false; syncToSheet(); }
-  });
-}
-
-function showSyncStatus(msg, ok=false, err=false){
-  const el = document.getElementById('sync-status');
-  if(!el) return;
-  el.textContent = msg;
-  el.style.color = err ? '#A32D2D' : ok ? '#1D9E75' : '#854F0B';
-}
-
-async function loadFromSheet(){
-  showSyncStatus('불러오는 중...');
-  try{
-    const res = await fetch(GAS_URL+'?action=readAll');
-    const json = await res.json();
-    if(!json.ok) throw new Error(json.message);
-    const d = json.data;
-    if(d.orders&&d.orders.length>0)       orders    = d.orders;
-    if(d.stocks&&d.stocks.length>0)       stocks    = d.stocks;
-    if(d.settles&&d.settles.length>0)     settles   = d.settles;
-    else settles = [];
-    if(d.purchases&&d.purchases.length>0) purchases = d.purchases;
-    else if(!purchases||purchases.length===0) purchases = INIT_PURCHASES;
-    if(d.losses&&d.losses.length>0)       losses    = d.losses;
-    if(d.channels&&d.channels.length>0)   channels  = d.channels;
-    // localStorage도 업데이트
-    localStorage.setItem('atm_orders',JSON.stringify(orders));
-    localStorage.setItem('atm_stocks',JSON.stringify(stocks));
-    localStorage.setItem('atm_settles',JSON.stringify(settles));
-    localStorage.setItem('atm_purchases',JSON.stringify(purchases));
-    localStorage.setItem('atm_losses',JSON.stringify(losses));
-    localStorage.setItem('atm_channels',JSON.stringify(channels));
-    showSyncStatus('✓ 최신 데이터 로드됨', true);
-    return true;
-  } catch(e){
-    showSyncStatus('구글 시트 연결 실패 — 로컬 데이터 사용 중', false, true);
-    return false;
-  }
-}
-
-function W(n){return Number(n||0).toLocaleString()+'원';}
-function N(n){return Number(n||0).toLocaleString();}
-function getSkuOpts(all){return(all?'<option value="">전체 SKU</option>':'')+stocks.map(s=>`<option value="${s.sku}">${s.sku} — ${s.name}</option>`).join('');}
-function getChOpts(all){return(all?'<option value="">전체 채널</option>':'')+channels.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');}
-
-function refreshSelects(){
-  ['o-sku','s-sku','p-sku','l-sku'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML=getSkuOpts(false);});
-  ['o-ch','st-ch'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML=getChOpts(false);});
-  ['of-ch','stf-ch'].forEach(id=>{const e=document.getElementById(id);if(e){const v=e.value;e.innerHTML=getChOpts(true);e.value=v;}});
-  ['of-sku','pf-sku'].forEach(id=>{const e=document.getElementById(id);if(e){const v=e.value;e.innerHTML=getSkuOpts(true);e.value=v;}});
-}
-
-function init(){
-  const d=new Date();
-  document.getElementById('today').textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일';
-  const ymd=d.toISOString().slice(0,10);
-  const ym=d.toISOString().slice(0,7);
-  ['o-date','p-date','l-date'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=ymd;});
-  document.getElementById('st-mo').value=ym;
-  const due=new Date(d);due.setDate(due.getDate()+14);
-  document.getElementById('p-due').value=due.toISOString().slice(0,10);
-  // 검색 기본값 전체로
-  const first='2025-12-01', last=ymd;
-  const e1=document.getElementById('of-s');if(e1)e1.value=first;
-  const e2=document.getElementById('of-e');if(e2)e2.value=last;
-  const e3=document.getElementById('stf-s');if(e3)e3.value='2026-05';
-  const e4=document.getElementById('stf-e');if(e4)e4.value=ym;
-  const e5=document.getElementById('pf-s');if(e5)e5.value=first;
-  const e6=document.getElementById('pf-e');if(e6)e6.value=last;
-  refreshSelects();
-  // 구글 시트 초기화 및 데이터 로드
-  initGoogleSheet();
-}
-
-async function initGoogleSheet(){
-  try{
-    // 시트 세팅 (처음 한 번)
-    await fetch(GAS_URL+'?action=setup');
-    // 최신 데이터 로드
-    const loaded = await loadFromSheet();
-    if(loaded){
-      renderDash();
-      renderStock();
+function setupSheets() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  Object.entries(SHEETS).forEach(([key, sheetName]) => {
+    let sheet = ss.getSheetByName(sheetName);
+    if (!sheet) sheet = ss.insertSheet(sheetName);
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(HEADERS[key]);
+      sheet.getRange(1, 1, 1, HEADERS[key].length)
+        .setBackground('#1D9E75')
+        .setFontColor('#ffffff')
+        .setFontWeight('bold');
+      sheet.setFrozenRows(1);
     }
-  } catch(e){
-    showSyncStatus('오프라인 모드 — 로컬 데이터 사용 중', false, true);
-  }
-}
-
-function go(t){
-  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
-  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
-  document.querySelector(`[onclick="go('${t}')"]`).classList.add('on');
-  document.getElementById('sec-'+t).classList.add('on');
-  if(t==='dash')renderDash();
-  if(t==='order')renderOrders();
-  if(t==='stock')renderStock();
-  if(t==='settle')renderSettle();
-  if(t==='purchase'){
-    document.getElementById('pf-s').value='2025-12-01';
-    document.getElementById('pf-e').value=new Date().toISOString().slice(0,10);
-    renderPurchase();
-  }
-  if(t==='loss')renderLoss();
-  if(t==='sku-mgmt')renderSkuMgmt();
-  if(t==='ch-mgmt')renderChMgmt();
-}
-
-// ===== 대시보드 =====
-function renderDash(){
-  const ym=new Date().toISOString().slice(0,7);
-  const mo=orders.filter(o=>o.date&&o.date.startsWith(ym)&&o.status!=='can');
-  // 이번달 매출액 — price는 이미 총금액이므로 qty 곱하지 않음
-  const sales=mo.reduce((a,o)=>a+Number(o.price||0),0);
-  // 이번달 정산액 — 정산관리 탭 입력된 것만 표시 (미입력시 0원)
-  const rev=settles.filter(s=>s.month&&s.month.startsWith(ym)).reduce((a,s)=>a+Number(s.net||0),0);
-  const revLabel=rev>0?'정산관리 탭 기준':'정산 미입력';
-  // 입금완료/미입금
-  const allActive=orders.filter(o=>o.status!=='can');
-  const settledCnt=allActive.filter(o=>o.settled).length;
-  const unsettledCnt=allActive.filter(o=>!o.settled).length;
-  const pend=orders.filter(o=>o.status==='pend').length;
-  const low=stocks.filter(s=>s.safe>0&&s.qty<=s.safe).length;
-  document.getElementById('d-orders').textContent=mo.length+'건';
-  document.getElementById('d-sales').textContent=W(sales);
-  document.getElementById('d-rev').textContent=W(rev);
-  const revLabelEl=document.getElementById('d-rev-label');
-  if(revLabelEl)revLabelEl.textContent=revLabel;
-  document.getElementById('d-settled').textContent=settledCnt+'건';
-  document.getElementById('d-unsettled-txt').textContent=`미입금 ${unsettledCnt}건`;
-  document.getElementById('d-pend').textContent=pend+'건';
-  document.getElementById('d-low').textContent=low+'개';
-  const alerts=[];
-  if(low>0)alerts.push(`<div class="alert-box al-w"><i class="ti ti-alert-triangle"></i> 안전재고 이하 SKU <strong>${low}개</strong> 확인 필요</div>`);
-  if(pend>0)alerts.push(`<div class="alert-box al-d"><i class="ti ti-clock"></i> 미처리 주문 <strong>${pend}건</strong> 처리 필요</div>`);
-  if(unsettledCnt>0)alerts.push(`<div class="alert-box al-w"><i class="ti ti-coin"></i> 정산 미입금 주문 <strong>${unsettledCnt}건</strong> 확인 필요</div>`);
-  document.getElementById('alerts').innerHTML=alerts.join('');
-  const recent=[...orders].reverse().slice(0,8);
-  document.getElementById('d-list').innerHTML=recent.length?recent.map(o=>`<tr class="${o.status==='can'?'row-can':''}">
-    <td>${o.date||''}</td><td><span class="tag">${o.channel||''}</span></td><td>${o.buyer||''}</td>
-    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.productName||o.sku||''}</td>
-    <td>${N(o.qty)}개</td><td>${W(Number(o.price||0))}</td>
-    <td>${W(Number(o.settle||0))}</td>
-    <td><span class="badge ${SC[o.status]||''}">${SM[o.status]||o.status}</span></td>
-  </tr>`).join(''):'<tr><td colspan="8" class="empty">주문 없음</td></tr>';
-  document.getElementById('d-stock').innerHTML=stocks.filter(s=>s.inQty>0||s.qty>0).map(s=>{
-    const l=s.safe>0&&s.qty<=s.safe;
-    return `<tr><td><code>${s.sku}</code></td><td>${s.name}</td><td><span class="tag">${s.line}</span></td>
-    <td style="font-weight:600;color:${l?'#A32D2D':'var(--text)'}">${N(s.qty)}개</td>
-    <td>${s.safe>0?N(s.safe)+'개':'-'}</td><td>${W(Math.round(s.qty*s.avgPrice))}</td>
-    <td><span class="badge ${l?'bd-low':'bd-ok'}">${l?'부족':'정상'}</span></td></tr>`;
-  }).join('');
-}
-
-// ===== 주문관리 =====
-function onSkuChange(){
-  const sku=document.getElementById('o-sku').value;
-  const s=stocks.find(x=>x.sku===sku);
-  const pname=document.getElementById('o-pname');
-  if(s&&pname) pname.value=s.name;
-}
-
-function addOrder(){
-  const sku=document.getElementById('o-sku').value;
-  const pnameEl=document.getElementById('o-pname');
-  const s=stocks.find(x=>x.sku===sku);
-  const productName=pnameEl.value.trim()||(s?s.name:'');
-  const d={id:Date.now(),date:document.getElementById('o-date').value,channel:document.getElementById('o-ch').value,buyer:document.getElementById('o-buyer').value.trim(),orderNum:document.getElementById('o-num').value.trim(),sku,qty:document.getElementById('o-qty').value,price:document.getElementById('o-price').value||0,settle:document.getElementById('o-settle').value||0,ship:document.getElementById('o-ship').value,track:document.getElementById('o-track').value.trim(),status:document.getElementById('o-status').value,note:document.getElementById('o-note').value.trim(),productName,settled:false,settleDate:''};
-  if(!d.qty){alert('수량을 입력해주세요.');return;}
-  orders.push(d);
-  if(s&&d.status!=='can'){s.qty=Math.max(0,s.qty-Number(d.qty));s.outQty=(s.outQty||0)+Number(d.qty);}
-  save();renderOrders();
-  ['o-buyer','o-num','o-qty','o-price','o-settle','o-track','o-note'].forEach(id=>document.getElementById(id).value='');
-  if(pnameEl) pnameEl.value='';
-}
-
-function resetOF(){
-  document.getElementById('of-s').value='2025-12-01';
-  document.getElementById('of-e').value=new Date().toISOString().slice(0,10);
-  document.getElementById('of-ch').value='';document.getElementById('of-sku').value='';
-  document.getElementById('of-buyer').value='';document.getElementById('of-st').value='';
-  renderOrders();
-}
-
-function renderOrders(){
-  const s=document.getElementById('of-s')?.value||'';
-  const e=document.getElementById('of-e')?.value||'';
-  const ch=document.getElementById('of-ch')?.value||'';
-  const sku=document.getElementById('of-sku')?.value||'';
-  const buyer=(document.getElementById('of-buyer')?.value||'').trim().toLowerCase();
-  const st=document.getElementById('of-st')?.value||'';
-  let list=orders.filter(o=>{
-    if(s&&o.date<s)return false;
-    if(e&&o.date>e)return false;
-    if(ch&&o.channel!==ch)return false;
-    if(sku&&o.sku!==sku)return false;
-    if(buyer&&!o.buyer?.toLowerCase().includes(buyer))return false;
-    if(st&&o.status!==st)return false;
-    return true;
   });
-  const totalS=list.filter(o=>o.status!=='can').reduce((a,o)=>a+Number(o.price||0),0);
-  const totalN=list.filter(o=>o.status!=='can').reduce((a,o)=>a+Number(o.settle||0),0);
-  const canCnt=list.filter(o=>o.status==='can').length;
-  document.getElementById('o-cnt').textContent='총 '+list.length+'건 (취소/반품 '+canCnt+'건)';
-  document.getElementById('o-summary').textContent=list.length?`유효 판매합계 ${W(totalS)} | 정산합계 ${W(totalN)}`:'';
-  document.getElementById('o-list').innerHTML=[...list].reverse().map(o=>`<tr class="${o.status==='can'?'row-can':''}">
-    <td style="white-space:nowrap;font-size:12px">${(o.date||'').slice(0,10)}</td>
-    <td><span class="tag">${o.channel||''}</span></td>
-    <td style="white-space:nowrap">${o.buyer||''}</td>
-    <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${o.productName||o.sku||''}">${o.productName||o.sku||''}</td>
-    <td style="text-align:center">${N(o.qty)}개</td>
-    <td style="text-align:right">${W(Number(o.price||0))}</td>
-    <td style="text-align:right">${W(Number(o.settle||0))}</td>
-    <td style="white-space:nowrap;text-align:center">
-      ${o.status==='can'?'<span class="badge bd-can">취소</span>':`<button class="btn sm ${o.settled?'p':'ghost'}" onclick="toggleSettle(${o.id})" style="font-size:10px;padding:2px 6px">${o.settled?'✓':'미정산'}</button>`}
-    </td>
-    <td style="font-size:11px;white-space:nowrap;color:var(--text2)"><input type="date" value="${o.settleDate||''}" style="font-size:11px;padding:1px 3px;border:.5px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);width:115px" onchange="setSettleDate(${o.id},this.value)"></td>
-    <td style="font-size:11px;white-space:nowrap">${o.track||''}</td>
-    <td><span class="badge ${SC[o.status]||''}">${SM[o.status]||o.status}</span></td>
-    <td style="font-size:11px;color:var(--text3);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${o.note||''}">${o.note||''}</td>
-    <td style="white-space:nowrap;display:flex;gap:4px">
-      <button class="btn sm info" onclick="openOrderEdit(${o.id})" title="수정"><i class="ti ti-edit"></i></button>
-      <button class="btn sm danger" onclick="delOrder(${o.id})" title="삭제"><i class="ti ti-trash"></i></button>
-    </td>
-  </tr>`).join('')||'<tr><td colspan="13" class="empty">조건에 맞는 주문이 없습니다</td></tr>';
+  return '시트 세팅 완료';
 }
 
-function openOrderEdit(id){
-  const o=orders.find(x=>x.id===id);if(!o)return;
-  document.getElementById('oe-id').value=id;
-  document.getElementById('oe-date').value=o.date||'';
-  document.getElementById('oe-buyer').value=o.buyer||'';
-  document.getElementById('oe-num').value=o.orderNum||'';
-  document.getElementById('oe-pname').value=o.productName||'';
-  document.getElementById('oe-qty').value=o.qty||'';
-  document.getElementById('oe-price').value=o.price||'';
-  document.getElementById('oe-settle').value=o.settle||'';
-  document.getElementById('oe-track').value=o.track||'';
-  document.getElementById('oe-note').value=o.note||'';
-  document.getElementById('oe-settled').value=o.settled?'true':'false';
-  document.getElementById('oe-settledate').value=o.settleDate||'';
-  const oeChEl=document.getElementById('oe-ch');
-  oeChEl.innerHTML=channels.map(c=>`<option${c.name===o.channel?' selected':''}>${c.name}</option>`).join('');
-  const oeSkuEl=document.getElementById('oe-sku');
-  oeSkuEl.innerHTML='<option value="">SKU 없음</option>'+stocks.map(s=>`<option value="${s.sku}"${s.sku===o.sku?' selected':''}>${s.sku} — ${s.name}</option>`).join('');
-  document.getElementById('oe-ship').value=o.ship||'롯데택배';
-  document.getElementById('oe-status').value=o.status||'pend';
-  document.getElementById('order-edit-modal').classList.add('open');
-}
-
-function closeOrderEdit(){document.getElementById('order-edit-modal').classList.remove('open');}
-
-function saveOrderEdit(){
-  const id=Number(document.getElementById('oe-id').value);
-  const o=orders.find(x=>x.id===id);if(!o)return;
-  o.date=document.getElementById('oe-date').value;
-  o.channel=document.getElementById('oe-ch').value;
-  o.buyer=document.getElementById('oe-buyer').value.trim();
-  o.orderNum=document.getElementById('oe-num').value.trim();
-  o.productName=document.getElementById('oe-pname').value.trim();
-  o.sku=document.getElementById('oe-sku').value;
-  o.qty=document.getElementById('oe-qty').value;
-  o.price=document.getElementById('oe-price').value||0;
-  o.settle=document.getElementById('oe-settle').value||0;
-  o.ship=document.getElementById('oe-ship').value;
-  o.track=document.getElementById('oe-track').value.trim();
-  o.status=document.getElementById('oe-status').value;
-  o.note=document.getElementById('oe-note').value.trim();
-  o.settled=document.getElementById('oe-settled').value==='true';
-  o.settleDate=document.getElementById('oe-settledate').value;
-  save();renderOrders();closeOrderEdit();
-}
-
-function delOrder(id){
-  if(!confirm('삭제할까요?'))return;
-  const o=orders.find(x=>x.id===id);
-  if(o&&o.status!=='can'){const s=stocks.find(x=>x.sku===o.sku);if(s){s.qty+=Number(o.qty);s.outQty=Math.max(0,(s.outQty||0)-Number(o.qty));}}
-  orders=orders.filter(x=>x.id!==id);save();renderOrders();
-}
-
-function toggleSettle(id){
-  const o=orders.find(x=>x.id===id);if(!o)return;
-  o.settled=!o.settled;
-  if(o.settled&&!o.settleDate) o.settleDate=new Date().toISOString().slice(0,10);
-  if(!o.settled) o.settleDate='';
-  save();renderOrders();
-}
-
-function setSettleDate(id,val){
-  const o=orders.find(x=>x.id===id);if(!o)return;
-  o.settleDate=val;
-  if(val) o.settled=true;
-  save();
-}
-
-// ===== 재고관리 =====
-function resetSF(){document.getElementById('sf-kw').value='';document.getElementById('sf-line').value='';document.getElementById('sf-st').value='';renderStock();}
-
-function renderStock(){
-  const kw=(document.getElementById('sf-kw')?.value||'').toLowerCase();
-  const line=document.getElementById('sf-line')?.value||'';
-  const st=document.getElementById('sf-st')?.value||'';
-  let list=stocks.filter(s=>{
-    if(kw&&!s.sku.toLowerCase().includes(kw)&&!s.name.toLowerCase().includes(kw))return false;
-    if(line&&s.line!==line)return false;
-    if(st==='low'&&!(s.safe>0&&s.qty<=s.safe&&s.qty>0))return false;
-    if(st==='zero'&&s.qty!==0)return false;
-    if(st==='ok'&&(s.qty===0||(s.safe>0&&s.qty<=s.safe)))return false;
-    return true;
-  });
-  document.getElementById('s-cnt').textContent=list.length+'개 표시';
-  document.getElementById('s-list').innerHTML=list.map(s=>{
-    const low=s.safe>0&&s.qty<=s.safe;
-    return `<tr><td><code>${s.sku}</code></td><td>${s.name}</td><td><span class="tag">${s.line}</span></td>
-    <td style="font-weight:600;color:${low?'#A32D2D':'var(--text)'}">${N(s.qty)}개</td>
-    <td>${N(s.inQty)}개</td><td>${N(s.outQty)}개</td>
-    <td style="color:#854F0B">${N(s.lossQty||0)}개</td>
-    <td>${W(s.avgPrice)}</td><td>${W(Math.round(s.qty*s.avgPrice))}</td>
-    <td>${s.safe>0?N(s.safe)+'개':'-'}</td>
-    <td><span class="badge ${low?'bd-low':s.qty===0?'bd-zero':'bd-ok'}">${low?'부족':s.qty===0?'소진':'정상'}</span></td></tr>`;
-  }).join('')||'<tr><td colspan="11" class="empty">조건에 맞는 SKU 없음</td></tr>';
-  const ss=document.getElementById('s-sku');if(ss)ss.innerHTML=getSkuOpts(false);
-}
-
-function adjStock(){
-  const sku=document.getElementById('s-sku').value;
-  const adj=Number(document.getElementById('s-adj').value)||0;
-  const price=Number(document.getElementById('s-price').value)||0;
-  if(!adj){alert('조정수량을 입력해주세요.');return;}
-  const s=stocks.find(x=>x.sku===sku);
-  if(s){
-    if(adj>0){const prev=s.inQty||0;s.inQty=(s.inQty||0)+adj;if(price>0&&s.inQty>0)s.avgPrice=Math.round((s.avgPrice*prev+price*adj)/s.inQty)||price;}
-    s.qty=Math.max(0,s.qty+adj);
+function doGet(e) {
+  const action = e.parameter.action;
+  const sheet_key = e.parameter.sheet;
+  try {
+    if (action === 'setup') return jsonResponse({ok: true, message: setupSheets()});
+    if (action === 'read') return jsonResponse({ok: true, data: readSheet(sheet_key)});
+    if (action === 'readAll') {
+      const all = {};
+      Object.keys(SHEETS).forEach(key => { all[key] = readSheet(key); });
+      return jsonResponse({ok: true, data: all});
+    }
+    return jsonResponse({ok: false, message: '알 수 없는 action'});
+  } catch(err) {
+    return jsonResponse({ok: false, message: err.toString()});
   }
-  save();renderStock();
-  ['s-adj','s-price','s-reason'].forEach(id=>document.getElementById(id).value='');
-  alert('재고 조정 완료');
 }
 
-// ===== 정산관리 =====
-function calcSt(){
-  const s=Number(document.getElementById('st-sales').value)||0;
-  const f=Number(document.getElementById('st-fee').value)||0;
-  const a=Number(document.getElementById('st-ad').value)||0;
-  const e=Number(document.getElementById('st-etc').value)||0;
-  document.getElementById('st-net').value=s-f-a-e;
-}
+function doPost(e) {
+  try {
+    const payload = JSON.parse(e.postData.contents);
+    const action = payload.action;
+    const sheet_key = payload.sheet;
+    const data = payload.data;
 
-function addSettle(){
-  const d={id:Date.now(),month:document.getElementById('st-mo').value,channel:document.getElementById('st-ch').value,sales:Number(document.getElementById('st-sales').value)||0,fee:Number(document.getElementById('st-fee').value)||0,ad:Number(document.getElementById('st-ad').value)||0,etc:Number(document.getElementById('st-etc').value)||0,net:Number(document.getElementById('st-net').value)||0,note:document.getElementById('st-note').value};
-  if(!d.month||!d.sales){alert('정산월과 매출액을 입력해주세요.');return;}
-  settles.push(d);save();renderSettle();
-  ['st-sales','st-fee','st-ad','st-etc','st-net','st-note'].forEach(id=>document.getElementById(id).value='');
-}
-
-function resetSTF(){document.getElementById('stf-s').value='2026-05';document.getElementById('stf-e').value=new Date().toISOString().slice(0,7);document.getElementById('stf-ch').value='';renderSettle();}
-
-function renderSettle(){
-  const ms=document.getElementById('stf-s')?.value||'';
-  const me=document.getElementById('stf-e')?.value||'';
-  const ch=document.getElementById('stf-ch')?.value||'';
-  let list=settles.filter(s=>{
-    if(ms&&s.month<ms)return false;
-    if(me&&s.month>me)return false;
-    if(ch&&s.channel!==ch)return false;
-    return true;
-  });
-  const sum=document.getElementById('st-sum');
-  const tb=document.getElementById('st-list');
-  if(!list.length){tb.innerHTML='<tr><td colspan="9" class="empty">조건에 맞는 정산 없음</td></tr>';sum.style.display='none';return;}
-  const ts=list.reduce((a,x)=>a+x.sales,0);
-  const tn=list.reduce((a,x)=>a+x.net,0);
-  sum.style.display='flex';
-  sum.innerHTML=`${list.length}건 | 총 매출액 <span>${W(ts)}</span> &nbsp;|&nbsp; 총 실정산액 <span>${W(tn)}</span>`;
-  tb.innerHTML=[...list].reverse().map(s=>`<tr>
-    <td>${s.month}</td><td><span class="tag">${s.channel}</span></td>
-    <td>${W(s.sales)}</td><td>${W(s.fee)}</td><td>${W(s.ad)}</td><td>${W(s.etc)}</td>
-    <td style="font-weight:600;color:#1D9E75">${W(s.net)}</td>
-    <td>${s.note||''}</td>
-    <td><button class="btn sm danger" onclick="delSettle(${s.id})"><i class="ti ti-trash"></i></button></td>
-  </tr>`).join('');
-}
-
-function delSettle(id){if(!confirm('삭제?'))return;settles=settles.filter(x=>x.id!==id);save();renderSettle();}
-
-// ===== 발주관리 =====
-function addPurchase(){
-  const d={id:Date.now(),date:document.getElementById('p-date').value,vendor:document.getElementById('p-vendor').value.trim(),sku:document.getElementById('p-sku').value,qty:Number(document.getElementById('p-qty').value)||0,price:Number(document.getElementById('p-price').value)||0,due:document.getElementById('p-due').value,status:document.getElementById('p-st').value,note:document.getElementById('p-note').value};
-  if(!d.qty){alert('발주수량을 입력해주세요.');return;}
-  purchases.push(d);save();renderPurchase();
-  ['p-qty','p-price','p-note'].forEach(id=>document.getElementById(id).value='');
-}
-
-function resetPF(){document.getElementById('pf-s').value='2025-12-01';document.getElementById('pf-e').value=new Date().toISOString().slice(0,10);document.getElementById('pf-sku').value='';document.getElementById('pf-st').value='';renderPurchase();}
-
-function renderPurchase(){
-  const s=document.getElementById('pf-s')?.value||'';
-  const e=document.getElementById('pf-e')?.value||'';
-  const sku=document.getElementById('pf-sku')?.value||'';
-  const st=document.getElementById('pf-st')?.value||'';
-  let list=purchases.filter(p=>{
-    if(s&&p.date<s)return false;if(e&&p.date>e)return false;
-    if(sku&&p.sku!==sku)return false;if(st&&p.status!==st)return false;
-    return true;
-  });
-  const total=list.reduce((a,p)=>a+p.price*p.qty,0);
-  document.getElementById('p-cnt').textContent='총 '+list.length+'건';
-  document.getElementById('p-summary').textContent=list.length?`발주금액 합계 ${W(total)}`:'';
-  document.getElementById('p-list').innerHTML=[...list].reverse().map(p=>{
-    const sc2=p.status==='done'?'bd-done':p.status==='ship'?'bd-ship':'bd-pend';
-    return `<tr><td>${p.date||''}</td><td>${p.vendor||''}</td><td><code>${p.sku}</code></td><td>${N(p.qty)}개</td><td>${W(p.price)}</td><td>${W(p.price*p.qty)}</td><td>${p.due||''}</td><td><span class="badge ${sc2}">${PSM[p.status]}</span></td><td>${p.note||''}</td><td><button class="btn sm danger" onclick="delPurch(${p.id})"><i class="ti ti-trash"></i></button></td></tr>`;
-  }).join('')||'<tr><td colspan="10" class="empty">발주 없음</td></tr>';
-  const ps=document.getElementById('p-sku');if(ps)ps.innerHTML=getSkuOpts(false);
-}
-
-function delPurch(id){if(!confirm('삭제?'))return;purchases=purchases.filter(x=>x.id!==id);save();renderPurchase();}
-
-// ===== 로스관리 =====
-function addLoss(){
-  const deduct=document.getElementById('l-deduct').value==='yes';
-  const skuVal=document.getElementById('l-sku').value;
-  const qty=Number(document.getElementById('l-qty').value)||0;
-  if(!qty){alert('수량을 입력해주세요.');return;}
-  const d={id:Date.now(),date:document.getElementById('l-date').value,sku:skuVal,qty,type:document.getElementById('l-type').value,deduct,note:document.getElementById('l-note').value};
-  losses.push(d);
-  if(deduct){const s=stocks.find(x=>x.sku===skuVal);if(s){s.qty=Math.max(0,s.qty-qty);s.lossQty=(s.lossQty||0)+qty;}}
-  save();renderLoss();['l-qty','l-note'].forEach(id=>document.getElementById(id).value='');
-  alert('로스 등록 완료');
-}
-
-function renderLoss(){
-  const ls=document.getElementById('l-sku');if(ls)ls.innerHTML=getSkuOpts(false);
-  const total=losses.reduce((a,x)=>a+Number(x.qty),0);
-  document.getElementById('l-sum').textContent=losses.length?`총 ${losses.length}건 / ${N(total)}개`:'';
-  document.getElementById('l-list').innerHTML=[...losses].reverse().map(l=>{
-    const s=stocks.find(x=>x.sku===l.sku);
-    return `<tr><td>${l.date||''}</td><td><code>${l.sku}</code></td><td>${s?s.name:l.sku}</td><td style="color:#A32D2D;font-weight:600">${N(l.qty)}개</td><td><span class="badge bd-loss">${l.type}</span></td><td><span class="badge ${l.deduct?'bd-can':'bd-zero'}">${l.deduct?'차감됨':'이력만'}</span></td><td>${l.note||''}</td><td><button class="btn sm danger" onclick="delLoss(${l.id})"><i class="ti ti-trash"></i></button></td></tr>`;
-  }).join('')||'<tr><td colspan="8" class="empty">로스 이력 없음</td></tr>';
-}
-
-function delLoss(id){
-  const l=losses.find(x=>x.id===id);
-  if(!confirm('삭제?'+(l&&l.deduct?' 재고가 복구됩니다.':'')))return;
-  if(l&&l.deduct){const s=stocks.find(x=>x.sku===l.sku);if(s){s.qty+=Number(l.qty);s.lossQty=Math.max(0,(s.lossQty||0)-Number(l.qty));}}
-  losses=losses.filter(x=>x.id!==id);save();renderLoss();
-}
-
-// ===== SKU 관리 =====
-function addSku(){
-  const sku=document.getElementById('sk-sku').value.trim();
-  const name=document.getElementById('sk-name').value.trim();
-  if(!sku||!name){alert('SKU 코드와 상품명을 입력해주세요.');return;}
-  if(stocks.find(x=>x.sku===sku)){alert('이미 존재하는 SKU입니다.');return;}
-  const qty=Number(document.getElementById('sk-qty').value)||0;
-  stocks.push({sku,name,line:document.getElementById('sk-line').value,qty,inQty:qty,outQty:0,lossQty:0,avgPrice:Number(document.getElementById('sk-price').value)||0,safe:Number(document.getElementById('sk-safe').value)||0,note:document.getElementById('sk-note').value});
-  save();refreshSelects();renderSkuMgmt();
-  ['sk-sku','sk-name','sk-qty','sk-price','sk-safe','sk-note'].forEach(id=>document.getElementById(id).value='');
-  alert('SKU 추가 완료');
-}
-
-function renderSkuMgmt(){
-  document.getElementById('sku-cnt').textContent=`총 ${stocks.length}개`;
-  document.getElementById('sk-list').innerHTML=stocks.map(s=>`<tr>
-    <td><code>${s.sku}</code></td><td>${s.name}</td><td><span class="tag">${s.line}</span></td>
-    <td style="font-weight:600">${N(s.qty)}개</td><td>${W(s.avgPrice)}</td>
-    <td>${s.safe>0?N(s.safe)+'개':'-'}</td><td style="color:var(--text3)">${s.note||''}</td>
-    <td style="display:flex;gap:4px">
-      <button class="btn sm info" onclick="openSkuEdit('${s.sku}')"><i class="ti ti-edit"></i></button>
-      <button class="btn sm danger" onclick="delSku('${s.sku}')"><i class="ti ti-trash"></i></button>
-    </td></tr>`).join('')||'<tr><td colspan="8" class="empty">SKU 없음</td></tr>';
-}
-
-function openSkuEdit(sku){const s=stocks.find(x=>x.sku===sku);if(!s)return;document.getElementById('se-orig').value=sku;document.getElementById('se-sku').value=s.sku;document.getElementById('se-name').value=s.name;document.getElementById('se-line').value=s.line;document.getElementById('se-price').value=s.avgPrice;document.getElementById('se-safe').value=s.safe;document.getElementById('se-note').value=s.note||'';document.getElementById('sku-edit-modal').classList.add('open');}
-function closeSkuEdit(){document.getElementById('sku-edit-modal').classList.remove('open');}
-function saveSkuEdit(){const orig=document.getElementById('se-orig').value;const s=stocks.find(x=>x.sku===orig);if(!s)return;s.sku=document.getElementById('se-sku').value.trim()||orig;s.name=document.getElementById('se-name').value.trim();s.line=document.getElementById('se-line').value;s.avgPrice=Number(document.getElementById('se-price').value)||0;s.safe=Number(document.getElementById('se-safe').value)||0;s.note=document.getElementById('se-note').value;save();refreshSelects();renderSkuMgmt();closeSkuEdit();}
-function delSku(sku){if(!confirm(`'${sku}' 삭제?`))return;stocks=stocks.filter(x=>x.sku!==sku);save();refreshSelects();renderSkuMgmt();}
-
-// ===== 채널 관리 =====
-function addChannel(){
-  const name=document.getElementById('cm-name').value.trim();
-  if(!name){alert('채널명을 입력해주세요.');return;}
-  if(channels.find(x=>x.name===name)){alert('이미 존재하는 채널입니다.');return;}
-  channels.push({id:Date.now(),name,fee:document.getElementById('cm-fee').value.trim(),cycle:document.getElementById('cm-cycle').value,contact:document.getElementById('cm-contact').value.trim(),note:document.getElementById('cm-note').value.trim()});
-  save();refreshSelects();renderChMgmt();
-  ['cm-name','cm-fee','cm-contact','cm-note'].forEach(id=>document.getElementById(id).value='');alert('채널 추가 완료');
-}
-
-function renderChMgmt(){
-  document.getElementById('ch-cnt').textContent=`총 ${channels.length}개`;
-  document.getElementById('cm-list').innerHTML=channels.map(c=>`<tr>
-    <td><strong>${c.name}</strong></td>
-    <td>${c.fee?`<span style="font-size:11px">${c.fee}</span>`:'-'}</td>
-    <td><span class="tag">${c.cycle}</span></td>
-    <td>${c.contact||'-'}</td><td style="color:var(--text3)">${c.note||''}</td>
-    <td style="display:flex;gap:4px">
-      <button class="btn sm info" onclick="openChEdit(${c.id})"><i class="ti ti-edit"></i></button>
-      <button class="btn sm danger" onclick="delChannel(${c.id})"><i class="ti ti-trash"></i></button>
-    </td></tr>`).join('')||'<tr><td colspan="6" class="empty">채널 없음</td></tr>';
-}
-
-function openChEdit(id){const c=channels.find(x=>x.id===id);if(!c)return;document.getElementById('ce-id').value=id;document.getElementById('ce-name').value=c.name;document.getElementById('ce-fee').value=c.fee||'';document.getElementById('ce-cycle').value=c.cycle;document.getElementById('ce-contact').value=c.contact||'';document.getElementById('ce-note').value=c.note||'';document.getElementById('ch-edit-modal').classList.add('open');}
-function closeChEdit(){document.getElementById('ch-edit-modal').classList.remove('open');}
-function saveChEdit(){const id=Number(document.getElementById('ce-id').value);const c=channels.find(x=>x.id===id);if(!c)return;c.name=document.getElementById('ce-name').value.trim();c.fee=document.getElementById('ce-fee').value.trim();c.cycle=document.getElementById('ce-cycle').value;c.contact=document.getElementById('ce-contact').value.trim();c.note=document.getElementById('ce-note').value.trim();save();refreshSelects();renderChMgmt();closeChEdit();}
-function delChannel(id){const c=channels.find(x=>x.id===id);if(!confirm(`'${c?.name}' 삭제?`))return;channels=channels.filter(x=>x.id!==id);save();refreshSelects();renderChMgmt();}
-
-// ===== 엑셀 내보내기 =====
-function openExport(){document.getElementById('export-modal').classList.add('open');}
-function closeExport(){document.getElementById('export-modal').classList.remove('open');}
-function doExport(){
-  if(typeof XLSX==='undefined'){alert('잠시 후 다시 시도해주세요.');return;}
-  const wb=XLSX.utils.book_new();
-  const today=new Date().toISOString().slice(0,10);
-  if(document.getElementById('ex-order').checked&&orders.length){
-    const rows=orders.map(o=>({주문일:o.date,채널:o.channel,구매자:o.buyer,주문번호:o.orderNum,상품명:o.productName||'',SKU:o.sku,수량:Number(o.qty),판매가합계:Number(o.price)*Number(o.qty),정산가합계:Number(o.settle)*Number(o.qty),출고방식:o.ship,송장번호:o.track,상태:SM[o.status]||o.status,비고:o.note}));
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'주문데이터');
+    if (action === 'saveAll') {
+      Object.entries(data).forEach(([key, rows]) => {
+        if (SHEETS[key]) writeSheet(key, rows);
+      });
+      return jsonResponse({ok: true, message: '전체 저장 완료'});
+    }
+    if (action === 'write') {
+      writeSheet(sheet_key, data);
+      return jsonResponse({ok: true, message: `${sheet_key} 저장 완료`});
+    }
+    return jsonResponse({ok: false, message: '알 수 없는 action'});
+  } catch(err) {
+    return jsonResponse({ok: false, message: err.toString()});
   }
-  if(document.getElementById('ex-stock').checked){
-    const rows=stocks.map(s=>({SKU:s.sku,상품명:s.name,라인:s.line,현재고:s.qty,총입고:s.inQty,총출고:s.outQty,총로스:s.lossQty||0,평균단가:s.avgPrice,재고금액:Math.round(s.qty*s.avgPrice),안전재고:s.safe}));
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'재고현황');
-  }
-  if(document.getElementById('ex-settle').checked&&settles.length){
-    const rows=settles.map(s=>({정산월:s.month,채널:s.channel,매출액:s.sales,수수료:s.fee,광고비:s.ad,기타공제:s.etc,실정산액:s.net,비고:s.note}));
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'정산데이터');
-  }
-  if(document.getElementById('ex-purchase').checked&&purchases.length){
-    const rows=purchases.map(p=>({발주일:p.date,거래처:p.vendor,SKU:p.sku,수량:p.qty,단가:p.price,발주금액:p.price*p.qty,납기일:p.due,상태:PSM[p.status]||p.status,비고:p.note}));
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'발주데이터');
-  }
-  if(document.getElementById('ex-loss').checked&&losses.length){
-    const rows=losses.map(l=>{const s=stocks.find(x=>x.sku===l.sku);return{발생일:l.date,SKU:l.sku,상품명:s?s.name:l.sku,수량:l.qty,유형:l.type,재고차감:l.deduct?'차감됨':'이력만',비고:l.note};});
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'로스이력');
-  }
-  if(wb.SheetNames.length===0){alert('내보낼 데이터가 없습니다.');return;}
-  XLSX.writeFile(wb,`Atmise_ERP_${today}.xlsx`);
-  closeExport();
 }
 
-init();renderDash();renderStock();
-</script>
-</body>
-</html>
+function readSheet(key) {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SHEETS[key]);
+  if (!sheet || sheet.getLastRow() <= 1) return [];
+  const headers = HEADERS[key];
+  const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, headers.length).getValues();
+  return rows
+    .filter(row => row[0] !== '' && row[0] !== null)
+    .map(row => {
+      const obj = {};
+      headers.forEach((h, i) => { obj[h] = row[i]; });
+      return obj;
+    });
+}
+
+function writeSheet(key, rows) {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sheetName = SHEETS[key];
+  let sheet = ss.getSheetByName(sheetName);
+  if (!sheet) sheet = ss.insertSheet(sheetName);
+  const headers = HEADERS[key];
+
+  // 주문 시트는 헤더 컬럼 수 자동 맞춤
+  const currentHeaders = sheet.getLastRow() > 0 ? sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0] : [];
+  if (currentHeaders.length < headers.length) {
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sheet.getRange(1, 1, 1, headers.length)
+      .setBackground('#1D9E75')
+      .setFontColor('#ffffff')
+      .setFontWeight('bold');
+    sheet.setFrozenRows(1);
+  }
+
+  if (sheet.getLastRow() > 1) sheet.deleteRows(2, sheet.getLastRow() - 1);
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(headers);
+    sheet.getRange(1, 1, 1, headers.length)
+      .setBackground('#1D9E75')
+      .setFontColor('#ffffff')
+      .setFontWeight('bold');
+    sheet.setFrozenRows(1);
+  }
+
+  if (rows && rows.length > 0) {
+    const values = rows.map(row => headers.map(h => {
+      const v = row[h];
+      return (v === undefined || v === null) ? '' : v;
+    }));
+    sheet.getRange(2, 1, values.length, headers.length).setValues(values);
+  }
+}
+
+function jsonResponse(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
