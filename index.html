@@ -640,8 +640,13 @@ async function loadFromSheet(){
     const fmtDate=v=>{
       if(!v||v==='')return '';
       const s=String(v).trim();
+      // 정상 형식
       if(s.match(/^\d{4}-\d{2}-\d{2}$/))return s;
+      // ISO T 포함
       if(s.includes('T'))return s.slice(0,10);
+      // 한국 구글시트 표시형식: "2026. 5. 9." 또는 "2026. 05. 09."
+      const m=s.match(/(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})/);
+      if(m)return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
       return s.slice(0,10);
     };
     if(d.orders&&d.orders.length>0){orders=d.orders.map(o=>({...o,date:fmtDate(o.date),settleDate:fmtDate(o.settleDate)}));}
