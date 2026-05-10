@@ -582,7 +582,7 @@ let purchases = (_rawPurchases && _rawPurchases.length > 0) ? _rawPurchases : IN
 let losses   = JSON.parse(localStorage.getItem('atm_losses'))    || [];
 let channels = JSON.parse(localStorage.getItem('atm_channels'))  || DEFAULT_CHANNELS.map(c=>({...c}));
 
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbyB8LV1FhHCotqDd9kW8eAa2dyelrbngWxEnQHpMd8cGBE4SrTsrvlgpgM8GRxolRnj/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyR7Y9qNYwL3sUlyRmUh_ZHnOzU_Rg7Q2uAQkpXHuuquKKLTOVtsvIqZLl53gb824A1/exec';
 let _saving = false;
 let _saveQueue = false;
 
@@ -637,7 +637,29 @@ async function loadFromSheet(){
     const json = await res.json();
     if(!json.ok) throw new Error(json.message);
     const d = json.data;
-    const fmtDate=v=>{if(!v)return '';const s=String(v);if(s.includes('T'))return s.slice(0,10);if(s.match(/^\d{4}-\d{2}-\d{2}$/))return s;return s.slice(0,10);};
+    const fmtDate=v=>{
+      if(!v)return '';
+      // Date 객체인 경우 (구글 시트에서 Date로 오는 경우)
+      if(v instanceof Date){
+        const y=v.getFullYear();
+        const m=String(v.getMonth()+1).padStart(2,'0');
+        const d=String(v.getDate()).padStart(2,'0');
+        return `${y}-${m}-${d}`;
+      }
+      const s=String(v).trim();
+      // ISO 형식 T 포함 (UTC 문자열) → 한국시간 보정
+      if(s.includes('T')){
+        const dt=new Date(s);
+        const y=dt.getFullYear();
+        const m=String(dt.getMonth()+1).padStart(2,'0');
+        const d=String(dt.getDate()).padStart(2,'0');
+        // UTC 기준 9시간 보정
+        const kst=new Date(dt.getTime()+9*60*60*1000);
+        return `${kst.getFullYear()}-${String(kst.getMonth()+1).padStart(2,'0')}-${String(kst.getDate()).padStart(2,'0')}`;
+      }
+      if(s.match(/^\d{4}-\d{2}-\d{2}$/))return s;
+      return s.slice(0,10);
+    };
     if(d.orders&&d.orders.length>0){orders=d.orders.map(o=>({...o,date:fmtDate(o.date),settleDate:fmtDate(o.settleDate)}));}
     if(d.stocks&&d.stocks.length>0)       stocks    = d.stocks;
     if(d.settles&&d.settles.length>0)     settles   = d.settles;
