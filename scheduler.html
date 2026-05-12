@@ -220,6 +220,7 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYw2mSZf3IhZ03gFZv0
     <button class="tab" onclick="go('events')">🎯 행사관리</button>
     <button class="tab" onclick="go('todos')">✅ 할일</button>
     <button class="tab" onclick="go('routines')">🔁 루틴템플릿</button>
+    <button class="tab" onclick="go('sites')">🏪 입점사관리</button>
   </div>
   <div class="topbar-r">
     <span class="ss" id="ss">✓ 저장됨</span>
@@ -257,7 +258,10 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYw2mSZf3IhZ03gFZv0
 
 <script>
 // ── 상수 ──
-const SITES = ['쿠팡','네이버','11번가','G마켓','옥션','위메프','티몬','카카오','롯데온','SSG','인터파크','29CM','무신사','오늘의집','하프클럽','홈플러스','이마트몰','CJ더마켓','GS샵','현대H몰','기타'];
+const DEFAULT_SITES = ['쿠팡','네이버','11번가','G마켓','옥션','위메프','티몬','카카오','롯데온','SSG','인터파크','29CM','무신사','오늘의집','하프클럽','홈플러스','이마트몰','CJ더마켓','GS샵','현대H몰','기타'];
+let SITES = loadSites();
+function loadSites(){try{const s=localStorage.getItem('atmise_sites');return s?JSON.parse(s):[...DEFAULT_SITES];}catch(e){return[...DEFAULT_SITES];}}
+function saveSites(){try{localStorage.setItem('atmise_sites',JSON.stringify(SITES));}catch(e){}}
 const EV_TYPES = [
   {v:'routine',l:'루틴행사',cls:'type-routine'},
   {v:'promo',  l:'비정기행사',cls:'type-promo'},
@@ -285,7 +289,10 @@ let S = {
   view:'dash', events:[], todos:[], routines:[],
   evFilter:'all',
   mcY:T.getFullYear(), mcM:T.getMonth(),
-  calY:T.getFullYear(), calM:T.getMonth()
+  calY:T.getFullYear(), calM:T.getMonth(),
+  todoCalY:T.getFullYear(), todoCalM:T.getMonth(),
+  todoSelectedDate:today,
+  todoViewMode:'day'
 };
 
 // ── API ──
@@ -325,8 +332,8 @@ async function load(){
 // ── 뷰 전환 ──
 function go(v){
   S.view=v;
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('on',['dash','events','todos','routines'][i]===v));
-  const addLabel={dash:'+ 추가',events:'+ 행사추가',todos:'+ 할일추가',routines:'+ 루틴추가'};
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('on',['dash','events','todos','routines','sites'][i]===v));
+  const addLabel={dash:'+ 추가',events:'+ 행사추가',todos:'+ 할일추가',routines:'+ 루틴추가',sites:'+ 입점사추가'};
   document.getElementById('addBtn').textContent=addLabel[v]||'+ 추가';
   renderMain();
 }
@@ -335,6 +342,7 @@ function openAdd(){
   if(S.view==='events'||S.view==='dash') openEvModal();
   else if(S.view==='todos') openTodoModal();
   else if(S.view==='routines') openRoutineModal();
+  else if(S.view==='sites') openSiteModal();
   else openEvModal();
 }
 
@@ -380,6 +388,7 @@ function renderMain(){
   else if(S.view==='events')   c.innerHTML=buildEvents();
   else if(S.view==='todos')    c.innerHTML=buildTodos();
   else if(S.view==='routines') c.innerHTML=buildRoutines();
+  else if(S.view==='sites')    c.innerHTML=buildSites();
 }
 
 // ── 대시보드 ──
@@ -481,11 +490,44 @@ async function toggleEvChk(id,key){
 
 // ── 할일 탭 ──
 function buildTodos(){
-  const pending=S.todos.filter(t=>!t.done).sort((a,b)=>{
-    const pm={high:0,mid:1,low:2};
-    return (pm[a.priority]||1)-(pm[b.priority]||1)||a.dueDate.localeCompare(b.dueDate);
-  });
-  const done=S.todos.filter(t=>t.done);
+  const y=S.todoCalY, m=S.todoCalM;
+  const dows=['일','월','화','수','목','금','토'];
+  const first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
+  const monthStr=`${y}-${p2(m+1)}`;
+
+  // 달력 셀
+  let cells=dows.map(d=>`<div style="font-size:10px;color:var(--gray5);text-align:center;padding:4px 0;font-weight:600">${d}</div>`).join('');
+  for(let i=0;i<first;i++) cells+=`<div></div>`;
+  for(let d=1;d<=days;d++){
+    const ds=`${y}-${p2(m+1)}-${p2(d)}`;
+    const isT=ds===today, isSel=ds===S.todoSelectedDate;
+    const dayTodos=S.todos.filter(t=>t.dueDate===ds);
+    const pendingCnt=dayTodos.filter(t=>!t.done).length;
+    const doneCnt=dayTodos.filter(t=>t.done).length;
+    cells+=`<div onclick="selectTodoDate('${ds}')" style="
+      min-height:52px;padding:4px;border-radius:var(--rad);cursor:pointer;
+      background:${isSel?'var(--g)':isT?'var(--gl)':'transparent'};
+      border:1.5px solid ${isSel?'var(--g)':isT?'var(--g)':'transparent'};
+      transition:all .15s;
+    " onmouseover="this.style.background=this.style.background||'var(--gray2)'" onmouseout="">
+      <div style="font-size:11px;font-weight:700;color:${isSel?'#fff':isT?'var(--gd)':'var(--gray7)');margin-bottom:2px">${d}</div>
+      ${pendingCnt?`<div style="font-size:9px;background:${isSel?'rgba(255,255,255,0.3)':'var(--rl)'};color:${isSel?'#fff':'#A32D2D'};border-radius:3px;padding:1px 4px;margin-bottom:1px">미완 ${pendingCnt}</div>`:''}
+      ${doneCnt?`<div style="font-size:9px;background:${isSel?'rgba(255,255,255,0.2)':'var(--gl)'};color:${isSel?'#fff':'var(--gd)'};border-radius:3px;padding:1px 4px">완료 ${doneCnt}</div>`:''}
+    </div>`;
+  }
+
+  // 할일 목록 필터링
+  let filtered=[];
+  let listTitle='';
+  if(S.todoViewMode==='day'){
+    filtered=S.todos.filter(t=>t.dueDate===S.todoSelectedDate);
+    listTitle=`${korDate(S.todoSelectedDate)} 할일`;
+  } else {
+    filtered=S.todos.filter(t=>t.dueDate&&t.dueDate.startsWith(monthStr));
+    listTitle=`${y}년 ${m+1}월 전체`;
+  }
+  const pending=filtered.filter(t=>!t.done).sort((a,b)=>{const pm={high:0,mid:1,low:2};return (pm[a.priority]||1)-(pm[b.priority]||1);});
+  const done=filtered.filter(t=>t.done);
 
   const card=t=>`<div class="todo-item${t.done?' done-item':''}" onclick="openTodoModal('${t.id}')">
     <div class="chkbox${t.done?' on':''}" onclick="event.stopPropagation();toggleTodo('${t.id}')"></div>
@@ -494,20 +536,61 @@ function buildTodos(){
       <div class="ti-meta">
         ${t.priority?`<span class="pri-badge pri-${t.priority[0]}">${{high:'높음',mid:'보통',low:'낮음'}[t.priority]}</span>`:''}
         ${t.category?`<span class="cat-badge">${t.category}</span>`:''}
-        ${t.dueDate?`<span>${t.dueDate}</span>`:''}
+        ${S.todoViewMode==='month'&&t.dueDate?`<span style="font-size:11px;color:var(--gray5)">${korDate(t.dueDate)}</span>`:''}
       </div>
     </div>
   </div>`;
 
-  return `<div class="todo-group">
-    <div class="tg-title">미완료 <span class="tg-count">${pending.length}</span></div>
-    ${pending.length?pending.map(card).join(''):'<div class="empty">할일 없음 🎉</div>'}
-  </div>
-  ${done.length?`<div class="todo-group">
-    <div class="tg-title">완료 <span class="tg-count">${done.length}</span></div>
-    <div style="opacity:.55">${done.map(card).join('')}</div>
-  </div>`:''}`;
+  return `<div style="display:flex;gap:20px;align-items:flex-start">
+    <!-- 왼쪽: 달력 -->
+    <div style="flex-shrink:0;width:260px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <button onclick="todoCalNav(-1)" style="background:transparent;border:var(--bd);border-radius:var(--rad);padding:4px 10px;font-size:13px;color:var(--gray7)">‹</button>
+        <span style="font-size:14px;font-weight:700;color:var(--gray9)">${y}년 ${m+1}월</span>
+        <button onclick="todoCalNav(1)" style="background:transparent;border:var(--bd);border-radius:var(--rad);padding:4px 10px;font-size:13px;color:var(--gray7)">›</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">
+        ${cells}
+      </div>
+      <button onclick="selectTodoDate('${today}');todoCalReset()" style="margin-top:8px;width:100%;padding:6px;border-radius:var(--rad);border:var(--bd);background:#fff;color:var(--gray6);font-size:12px">오늘로 이동</button>
+    </div>
+
+    <!-- 오른쪽: 할일 목록 -->
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:14px;font-weight:700;color:var(--gray9)">${listTitle}</div>
+        <div style="display:flex;gap:4px">
+          <button onclick="setTodoViewMode('day')" style="padding:5px 12px;border-radius:20px;font-size:12px;border:var(--bd);background:${S.todoViewMode==='day'?'var(--g)':'#fff'};color:${S.todoViewMode==='day'?'#fff':'var(--gray6)'};font-weight:500">날짜별</button>
+          <button onclick="setTodoViewMode('month')" style="padding:5px 12px;border-radius:20px;font-size:12px;border:var(--bd);background:${S.todoViewMode==='month'?'var(--g)':'#fff'};color:${S.todoViewMode==='month'?'#fff':'var(--gray6)'};font-weight:500">이번달 전체</button>
+        </div>
+      </div>
+
+      <div class="todo-group">
+        <div class="tg-title">미완료 <span class="tg-count">${pending.length}</span></div>
+        ${pending.length?pending.map(card).join(''):`<div class="empty" style="padding:20px 0">✅ 미완료 할일 없음</div>`}
+      </div>
+      ${done.length?`<div class="todo-group" style="margin-top:14px">
+        <div class="tg-title">완료 <span class="tg-count">${done.length}</span></div>
+        <div style="opacity:.55">${done.map(card).join('')}</div>
+      </div>`:''}
+
+      <button onclick="openTodoModalOnDate('${S.todoSelectedDate}')" style="margin-top:12px;width:100%;padding:9px;border-radius:var(--rad);border:1.5px dashed var(--gray4);background:transparent;color:var(--gray6);font-size:13px;font-weight:500">
+        + ${korDate(S.todoSelectedDate)} 할일 추가
+      </button>
+    </div>
+  </div>`;
 }
+
+function selectTodoDate(ds){S.todoSelectedDate=ds;S.todoViewMode='day';renderMain();}
+function setTodoViewMode(m){S.todoViewMode=m;renderMain();}
+function todoCalNav(d){
+  S.todoCalM+=d;
+  if(S.todoCalM>11){S.todoCalM=0;S.todoCalY++;}
+  if(S.todoCalM<0){S.todoCalM=11;S.todoCalY--;}
+  renderMain();
+}
+function todoCalReset(){S.todoCalY=T.getFullYear();S.todoCalM=T.getMonth();renderMain();}
+function openTodoModalOnDate(ds){openTodoModal(null,ds);}
 
 async function toggleTodo(id){
   const t=S.todos.find(x=>x.id===id);
@@ -665,9 +748,9 @@ async function delEv(id){
 }
 
 // ── 할일 모달 ──
-function openTodoModal(idOrObj){
+function openTodoModal(idOrObj, preDate){
   const existing=typeof idOrObj==='string'?S.todos.find(x=>x.id===idOrObj):null;
-  const d=existing||{id:'',title:'',category:'기타',dueDate:today,priority:'mid',done:false,memo:''};
+  const d=existing||{id:'',title:'',category:'기타',dueDate:preDate||S.todoSelectedDate||today,priority:'mid',done:false,memo:''};
   const isEdit=!!d.id;
   document.getElementById('mroot').innerHTML=`
   <div class="modal-bg" onclick="if(event.target.classList.contains('modal-bg'))closeM()">
@@ -769,6 +852,77 @@ async function delRoutine(id){
   closeM();S.routines=S.routines.filter(x=>x.id!==id);render();
   await api('deleteRoutine',{id});
 }
+
+// ── 입점사 관리 ──
+function buildSites(){
+  return `<div style="max-width:520px">
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px">입점사 관리</div>
+    <div style="font-size:12px;color:var(--gray5);margin-bottom:18px">행사 등록 시 나오는 입점사 목록을 직접 관리하세요.</div>
+    <div style="display:flex;flex-direction:column;gap:6px" id="siteList">
+      ${SITES.map((s,i)=>`
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border:var(--bd);border-radius:var(--rad);box-shadow:var(--sh)">
+          <span style="flex:1;font-size:13px;font-weight:500;color:var(--gray8)">${s}</span>
+          <span style="font-size:11px;color:var(--gray5)">${S.events.filter(e=>e.site===s).length}건 사용중</span>
+          <button onclick="editSite(${i})" style="padding:4px 10px;border-radius:var(--rad);font-size:11px;border:var(--bd);background:#fff;color:var(--gray6)">수정</button>
+          <button onclick="deleteSite(${i})" style="padding:4px 10px;border-radius:var(--rad);font-size:11px;border:1px solid var(--rl);background:var(--rl);color:#A32D2D">삭제</button>
+        </div>`).join('')}
+    </div>
+    <button onclick="openSiteModal()" style="margin-top:14px;width:100%;padding:10px;border-radius:var(--rad);border:1.5px dashed var(--gray4);background:transparent;color:var(--gray6);font-size:13px;font-weight:500">+ 새 입점사 추가</button>
+  </div>`;
+}
+
+function openSiteModal(idx){
+  const isEdit=idx!==undefined;
+  const val=isEdit?SITES[idx]:'';
+  document.getElementById('mroot').innerHTML=`
+  <div class="modal-bg" onclick="if(event.target.classList.contains('modal-bg'))closeM()">
+    <div class="modal" style="max-width:340px">
+      <div class="modal-hd"><h3>${isEdit?'입점사 수정':'새 입점사 추가'}</h3></div>
+      <div class="modal-body">
+        <div><label class="fl">입점사명</label>
+          <input id="si-name" class="fi" type="text" value="${val}" placeholder="예) 쿠팡, 네이버 등">
+        </div>
+      </div>
+      <div class="modal-ft">
+        ${isEdit?`<button class="btn-del" onclick="deleteSite(${idx})">삭제</button>`:''}
+        <button class="btn-cancel" onclick="closeM()">취소</button>
+        <button class="btn-save" onclick="saveSite(${isEdit?idx:'null'})">저장</button>
+      </div>
+    </div>
+  </div>`;
+  setTimeout(()=>document.getElementById('si-name').focus(),80);
+}
+
+function editSite(idx){ openSiteModal(idx); }
+
+function saveSite(idx){
+  const name=document.getElementById('si-name').value.trim();
+  if(!name){alert('입점사명을 입력해주세요');return;}
+  if(idx===null||idx==='null'){
+    if(SITES.includes(name)){alert('이미 있는 입점사예요');return;}
+    SITES.push(name);
+  } else {
+    SITES[idx]=name;
+  }
+  saveSites();
+  closeM();
+  renderMain();
+}
+
+function deleteSite(idx){
+  const name=SITES[idx];
+  const useCount=S.events.filter(e=>e.site===name).length;
+  if(useCount>0){
+    if(!confirm(`"${name}"은 현재 ${useCount}건 행사에서 사용 중이에요.\n그래도 삭제할까요?`))return;
+  } else {
+    if(!confirm(`"${name}"을 삭제할까요?`))return;
+  }
+  SITES.splice(idx,1);
+  saveSites();
+  closeM();
+  renderMain();
+}
+
 
 function closeM(){
   document.getElementById('mroot').innerHTML='';
