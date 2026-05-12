@@ -315,11 +315,29 @@ function setSS(s){
   else{el.textContent='⚠ 오류';el.className='ss err';}
 }
 
+// 날짜 정규화: "Tue May 12 2026 ..." → "2026-05-12"
+function normalizeDate(v){
+  if(!v||v==='') return '';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+  try{
+    const d=new Date(v);
+    if(!isNaN(d)) return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }catch(e){}
+  return v;
+}
+function normalizeDates(arr, fields){
+  return (arr||[]).map(obj=>{
+    const n={...obj};
+    fields.forEach(f=>{if(n[f]) n[f]=normalizeDate(n[f]);});
+    return n;
+  });
+}
+
 async function load(){
   const r=await api('getAll');
   if(r.success){
-    S.events=r.events||[];
-    S.todos=r.todos||[];
+    S.events=normalizeDates(r.events||[], ['startDate','endDate']);
+    S.todos=normalizeDates(r.todos||[], ['dueDate']);
     S.routines=r.routines||[];
     render();
   } else {
