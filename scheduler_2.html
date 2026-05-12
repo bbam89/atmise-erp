@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atmise 스케줄러</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g:#1D9E75;--gd:#0F6E56;--gl:#E1F5EE;
+  --r:#E24B4A;--rl:#FCEBEB;
+  --a:#EF9F27;--al:#FAEEDA;
+  --b:#378ADD;--bl:#E6F1FB;
+  --gray1:#F8F9FA;--gray2:#F1F3F5;--gray3:#E9ECEF;
+  --gray4:#CED4DA;--gray5:#ADB5BD;--gray6:#6C757D;
+  --gray7:#495057;--gray8:#343A40;--gray9:#212529;
+  --bd:1px solid #E9ECEF;--rad:8px;--radl:12px;
+  --sh:0 1px 4px rgba(0,0,0,.07);--shl:0 4px 20px rgba(0,0,0,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--gray1);color:var(--gray9);font-size:14px;line-height:1.5;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+button{cursor:pointer;font-family:inherit}
+input,select,textarea{font-family:inherit}
+
+/* ── 상단바 ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:54px;background:#fff;border-bottom:var(--bd);flex-shrink:0;box-shadow:var(--sh)}
+.logo{font-size:15px;font-weight:700;letter-spacing:.5px;color:var(--gray9)}
+.logo em{color:var(--g);font-style:normal}
+.tabs{display:flex;gap:2px;background:var(--gray2);border-radius:var(--rad);padding:3px}
+.tab{padding:5px 15px;border-radius:6px;font-size:13px;border:none;background:transparent;color:var(--gray6);font-weight:500;transition:all .15s;white-space:nowrap}
+.tab.on{background:#fff;color:var(--gray9);box-shadow:var(--sh)}
+.tab:hover:not(.on){color:var(--gray8)}
+.topbar-r{display:flex;align-items:center;gap:10px}
+.ss{font-size:11px;color:var(--gray5);display:flex;align-items:center;gap:4px}
+.ss.saving{color:var(--a)}.ss.err{color:var(--r)}
+.btn-add{display:flex;align-items:center;gap:5px;padding:7px 15px;border-radius:var(--rad);font-size:13px;font-weight:500;border:none;background:var(--g);color:#fff;transition:background .15s}
+.btn-add:hover{background:var(--gd)}
+
+/* ── 바디 ── */
+.body{display:flex;flex:1;overflow:hidden}
+
+/* ── 사이드바 ── */
+.sidebar{width:210px;flex-shrink:0;background:#fff;border-right:var(--bd);padding:14px 10px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
+.sb-section{}
+.sb-title{font-size:10px;font-weight:700;color:var(--gray5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
+
+/* 미니 달력 */
+.mc-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.mc-mn{font-size:12px;font-weight:700;color:var(--gray7)}
+.mc-nav{display:flex;gap:1px}
+.mc-nav button{background:transparent;border:none;padding:2px 5px;border-radius:4px;font-size:13px;color:var(--gray5);line-height:1}
+.mc-nav button:hover{background:var(--gray2);color:var(--gray8)}
+.mc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+.mc-dow{font-size:9px;color:var(--gray4);text-align:center;padding:2px 0;font-weight:600}
+.mc-d{font-size:11px;text-align:center;padding:3px 1px;border-radius:4px;cursor:pointer;color:var(--gray7);position:relative}
+.mc-d:hover{background:var(--gray2)}
+.mc-d.t{background:var(--g);color:#fff;font-weight:700}
+.mc-d.om{color:var(--gray4)}
+.mc-d.hev::after{content:'';position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:3px;height:3px;border-radius:50%;background:var(--g)}
+.mc-d.t.hev::after{background:#fff}
+
+/* 사이드 아이템 */
+.si{padding:7px 8px;border-radius:var(--rad);border:var(--bd);margin-bottom:4px;cursor:pointer;transition:border-color .15s}
+.si:hover{border-color:var(--gray4);background:var(--gray1)}
+.si-t{font-size:12px;font-weight:500;color:var(--gray8)}
+.si-m{font-size:10px;color:var(--gray5);margin-top:1px}
+.si-empty{font-size:11px;color:var(--gray5);padding:3px 0}
+
+/* ── 메인 콘텐츠 ── */
+.content{flex:1;padding:18px 20px;overflow-y:auto}
+
+/* 대시보드 */
+.dash-greeting{font-size:18px;font-weight:700;color:var(--gray9);margin-bottom:4px}
+.dash-date{font-size:12px;color:var(--gray5);margin-bottom:18px}
+.dash-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.dash-card{background:#fff;border:var(--bd);border-radius:var(--radl);padding:16px;box-shadow:var(--sh)}
+.dc-title{font-size:12px;font-weight:700;color:var(--gray5);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.dc-count{font-size:11px;background:var(--gray2);color:var(--gray6);padding:2px 8px;border-radius:10px;font-weight:500;text-transform:none;letter-spacing:0}
+
+/* 이번주 행사 */
+.week-ev{display:flex;flex-direction:column;gap:6px}
+.we-item{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:var(--rad);border:var(--bd);cursor:pointer;transition:border-color .15s}
+.we-item:hover{border-color:var(--gray4)}
+.we-site{font-size:10px;font-weight:700;color:#fff;padding:2px 7px;border-radius:10px;background:var(--g);white-space:nowrap;flex-shrink:0;margin-top:1px}
+.we-info{flex:1}
+.we-title{font-size:12px;font-weight:500;color:var(--gray8)}
+.we-meta{font-size:10px;color:var(--gray5);margin-top:2px;display:flex;gap:8px}
+.we-chk{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
+.chk-dot{width:7px;height:7px;border-radius:50%;border:1.5px solid var(--gray4)}
+.chk-dot.done{background:var(--g);border-color:var(--g)}
+
+/* 오늘 할일 */
+.today-todos{display:flex;flex-direction:column;gap:5px}
+.tt-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--rad);border:var(--bd);cursor:pointer;transition:border-color .15s}
+.tt-item:hover{border-color:var(--gray4)}
+.tt-item.done-item .tt-text{text-decoration:line-through;color:var(--gray4)}
+.chkbox{width:15px;height:15px;border:2px solid var(--gray3);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.chkbox.on{background:var(--g);border-color:var(--g)}
+.chkbox.on::after{content:'✓';font-size:9px;color:#fff;font-weight:700}
+.tt-text{font-size:12px;font-weight:500;color:var(--gray8);flex:1}
+.p-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ph{background:var(--r)}.pm{background:var(--a)}.pl{background:var(--g)}
+
+/* 행사 탭 */
+.ev-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ev-filter{display:flex;gap:6px;flex-wrap:wrap}
+.fbtn{padding:5px 12px;border-radius:20px;font-size:12px;border:var(--bd);background:#fff;color:var(--gray6);font-weight:500;transition:all .15s}
+.fbtn.on{background:var(--g);color:#fff;border-color:var(--g)}
+.fbtn:hover:not(.on){background:var(--gray2)}
+
+.ev-list{display:flex;flex-direction:column;gap:8px}
+.ev-card{background:#fff;border:var(--bd);border-radius:var(--radl);padding:14px 16px;cursor:pointer;transition:border-color .15s;box-shadow:var(--sh)}
+.ev-card:hover{border-color:var(--gray4)}
+.ev-card-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.ev-site-badge{font-size:11px;font-weight:700;color:#fff;padding:3px 9px;border-radius:10px;background:var(--g);white-space:nowrap}
+.ev-type-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500}
+.type-routine{background:#E1F5EE;color:#0F6E56}
+.type-promo{background:#E6F1FB;color:#185FA5}
+.type-settle{background:#FAEEDA;color:#633806}
+.type-order{background:#FCEBEB;color:#A32D2D}
+.ev-title{font-size:14px;font-weight:600;color:var(--gray9);flex:1}
+.ev-card-meta{display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap}
+.ev-meta-item{font-size:11px;color:var(--gray6);display:flex;align-items:center;gap:4px}
+.ev-meta-item strong{color:var(--gray8);font-weight:600}
+.ev-chklist{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.chk-item{display:flex;align-items:center;gap:4px;font-size:11px;padding:3px 9px;border-radius:10px;border:var(--bd);background:var(--gray1);color:var(--gray6)}
+.chk-item.on{background:var(--gl);border-color:#9FE1CB;color:var(--gd)}
+.chk-item.on::before{content:'✓ '}
+.ev-progress{margin-top:6px}
+.prog-bar{height:4px;background:var(--gray3);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--g);border-radius:2px;transition:width .3s}
+.prog-label{font-size:10px;color:var(--gray5);margin-top:3px}
+.sales-row{display:flex;gap:12px;margin-top:6px}
+.sales-item{flex:1;background:var(--gray1);border-radius:var(--rad);padding:7px 10px;text-align:center}
+.sales-label{font-size:10px;color:var(--gray5);margin-bottom:2px}
+.sales-val{font-size:13px;font-weight:700;color:var(--gray8)}
+.sales-val.hit{color:var(--g)}
+
+/* 할일 탭 */
+.todo-group{margin-bottom:18px}
+.tg-title{font-size:11px;font-weight:700;color:var(--gray5);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.tg-count{font-size:10px;background:var(--gray2);color:var(--gray6);padding:1px 7px;border-radius:10px;text-transform:none;letter-spacing:0;font-weight:500}
+.todo-item{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:#fff;border:var(--bd);border-radius:var(--rad);margin-bottom:5px;cursor:pointer;transition:border-color .15s;box-shadow:var(--sh)}
+.todo-item:hover{border-color:var(--gray4)}
+.todo-item.done-item .ti-title{text-decoration:line-through;color:var(--gray5)}
+.ti-title{font-size:13px;font-weight:500;color:var(--gray8)}
+.ti-meta{font-size:11px;color:var(--gray5);margin-top:2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cat-badge{font-size:10px;padding:1px 7px;border-radius:10px;background:var(--gray2);color:var(--gray6);font-weight:500}
+.pri-badge{font-size:10px;padding:1px 7px;border-radius:10px;font-weight:600}
+.pri-h{background:var(--rl);color:#A32D2D}
+.pri-m{background:var(--al);color:#854F0B}
+.pri-l{background:var(--gl);color:#3B6D11}
+
+/* 루틴 탭 */
+.routine-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.rt-card{background:#fff;border:var(--bd);border-radius:var(--radl);padding:14px;cursor:pointer;box-shadow:var(--sh);transition:border-color .15s}
+.rt-card:hover{border-color:var(--gray4)}
+.rt-card.inactive{opacity:.5}
+.rt-site{font-size:10px;font-weight:700;color:#fff;padding:2px 8px;border-radius:10px;background:var(--g);display:inline-block;margin-bottom:8px}
+.rt-title{font-size:13px;font-weight:600;color:var(--gray8);margin-bottom:4px}
+.rt-meta{font-size:11px;color:var(--gray5)}
+.rt-actions{display:flex;gap:6px;margin-top:10px}
+.btn-use{flex:1;padding:5px;border-radius:var(--rad);font-size:12px;border:none;background:var(--g);color:#fff;font-weight:500}
+.btn-use:hover{background:var(--gd)}
+.btn-edit-sm{padding:5px 10px;border-radius:var(--rad);font-size:12px;border:var(--bd);background:#fff;color:var(--gray6)}
+
+/* 모달 */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:#fff;border-radius:var(--radl);width:100%;max-width:480px;box-shadow:var(--shl);max-height:90vh;display:flex;flex-direction:column}
+.modal-hd{padding:18px 20px 14px;border-bottom:var(--bd);flex-shrink:0}
+.modal-hd h3{font-size:15px;font-weight:700;color:var(--gray9)}
+.modal-body{padding:16px 20px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.fl{display:block;font-size:11px;font-weight:700;color:var(--gray6);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.fi{width:100%;padding:8px 10px;border:var(--bd);border-radius:var(--rad);font-size:13px;color:var(--gray8);transition:border-color .15s}
+.fi:focus{outline:none;border-color:var(--g)}
+.fi::placeholder{color:var(--gray4)}
+textarea.fi{resize:vertical;min-height:56px}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.chk-group{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.chk-toggle{display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:var(--rad);border:var(--bd);cursor:pointer;font-size:12px;color:var(--gray7);transition:all .15s;user-select:none}
+.chk-toggle.on{background:var(--gl);border-color:#9FE1CB;color:var(--gd);font-weight:500}
+.chk-toggle .cb{width:14px;height:14px;border:2px solid var(--gray4);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.chk-toggle.on .cb{background:var(--g);border-color:var(--g)}
+.chk-toggle.on .cb::after{content:'✓';font-size:9px;color:#fff;font-weight:700}
+.modal-ft{padding:14px 20px;border-top:var(--bd);display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-shrink:0}
+.btn-del{margin-right:auto;padding:7px 14px;border-radius:var(--rad);font-size:13px;border:1px solid var(--rl);background:var(--rl);color:#A32D2D;font-weight:500}
+.btn-del:hover{background:#F7C1C1}
+.btn-cancel{padding:7px 14px;border-radius:var(--rad);font-size:13px;border:var(--bd);background:#fff;color:var(--gray6);font-weight:500}
+.btn-cancel:hover{background:var(--gray2)}
+.btn-save{padding:7px 18px;border-radius:var(--rad);font-size:13px;border:none;background:var(--g);color:#fff;font-weight:600}
+.btn-save:hover{background:var(--gd)}
+
+.loading{display:flex;align-items:center;justify-content:center;height:200px;color:var(--gray5);font-size:14px;gap:10px}
+.spin{width:18px;height:18px;border:2px solid var(--gl);border-top-color:var(--g);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:36px 0;color:var(--gray5);font-size:13px}
+
+@media(max-width:768px){
+  .sidebar{display:none}
+  .content{padding:12px}
+  .dash-cols{grid-template-columns:1fr}
+  .fr2,.fr3{grid-template-columns:1fr}
+  .topbar{padding:0 12px}
+  .tab{padding:5px 10px;font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<script>
+// ⚠️ Apps Script 배포 URL을 여기에 넣으세요
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYw2mSZf3IhZ03gFZv0cpeuEB_DsC5ORtNmkEqTL8Lo2ZSgdG1vew6FEa5P4bikzQxvw/exec';
+</script>
+
+<div class="topbar">
+  <div class="logo"><em>ATMISE</em> 스케줄러</div>
+  <div class="tabs">
+    <button class="tab on" onclick="go('dash')">🏠 홈</button>
+    <button class="tab" onclick="go('events')">🎯 행사관리</button>
+    <button class="tab" onclick="go('todos')">✅ 할일</button>
+    <button class="tab" onclick="go('routines')">🔁 루틴템플릿</button>
+  </div>
+  <div class="topbar-r">
+    <span class="ss" id="ss">✓ 저장됨</span>
+    <button class="btn-add" id="addBtn" onclick="openAdd()">+ 추가</button>
+  </div>
+</div>
+
+<div class="body">
+  <div class="sidebar">
+    <div class="sb-section">
+      <div class="mc-hd">
+        <span class="mc-mn" id="mcTitle"></span>
+        <div class="mc-nav">
+          <button onclick="mcNav(-1)">‹</button>
+          <button onclick="mcNav(1)">›</button>
+        </div>
+      </div>
+      <div class="mc-grid" id="mcGrid"></div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-title">오늘 마감/할일</div>
+      <div id="sbTodos"></div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-title">임박 마감 (3일)</div>
+      <div id="sbUrgent"></div>
+    </div>
+  </div>
+  <div class="content" id="main">
+    <div class="loading"><div class="spin"></div> 데이터 불러오는 중...</div>
+  </div>
+</div>
+
+<div id="mroot"></div>
+
+<script>
+// ── 상수 ──
+const SITES = ['쿠팡','네이버','11번가','G마켓','옥션','위메프','티몬','카카오','롯데온','SSG','인터파크','29CM','무신사','오늘의집','하프클럽','홈플러스','이마트몰','CJ더마켓','GS샵','현대H몰','기타'];
+const EV_TYPES = [
+  {v:'routine',l:'루틴행사',cls:'type-routine'},
+  {v:'promo',  l:'비정기행사',cls:'type-promo'},
+  {v:'settle', l:'정산',cls:'type-settle'},
+  {v:'order',  l:'발주마감',cls:'type-order'}
+];
+const CATS    = ['발주','정산','소재제출','미팅','기타'];
+const PRIS    = [{v:'high',l:'높음'},{v:'mid',l:'보통'},{v:'low',l:'낮음'}];
+const CHK_LABELS = {chk_apply:'신청완료',chk_material:'소재제출',chk_coupon:'쿠폰설정',chk_result:'실적입력'};
+const CHK_KEYS   = Object.keys(CHK_LABELS);
+
+// ── 날짜 유틸 ──
+const T = new Date();
+const today = fmt(T);
+function fmt(d){return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`}
+function p2(n){return String(n).padStart(2,'0')}
+function addD(n){const d=new Date(T);d.setDate(T.getDate()+n);return fmt(d)}
+function weekEnd(){const d=new Date(T);d.setDate(T.getDate()+(6-T.getDay()));return fmt(d)}
+function weekStart(){const d=new Date(T);d.setDate(T.getDate()-T.getDay());return fmt(d)}
+function korDate(ds){if(!ds)return '';const[y,m,d]=ds.split('-');return `${m}/${d}`}
+function numFmt(n){return Number(n).toLocaleString()}
+
+// ── 상태 ──
+let S = {
+  view:'dash', events:[], todos:[], routines:[],
+  evFilter:'all',
+  mcY:T.getFullYear(), mcM:T.getMonth(),
+  calY:T.getFullYear(), calM:T.getMonth()
+};
+
+// ── API ──
+async function api(action, data={}){
+  setSS('saving');
+  try{
+    const r = await fetch(SCRIPT_URL,{
+      method:'POST',
+      body:JSON.stringify({action,...data}),
+      headers:{'Content-Type':'text/plain'}
+    });
+    const j = await r.json();
+    if(j.success!==false) setSS('ok'); else setSS('err');
+    return j;
+  }catch(e){setSS('err');return{success:false};}
+}
+
+function setSS(s){
+  const el=document.getElementById('ss');
+  if(s==='saving'){el.textContent='⏳ 저장 중...';el.className='ss saving';}
+  else if(s==='ok'){el.textContent='✓ 저장됨';el.className='ss';}
+  else{el.textContent='⚠ 오류';el.className='ss err';}
+}
+
+async function load(){
+  const r=await api('getAll');
+  if(r.success){
+    S.events=r.events||[];
+    S.todos=r.todos||[];
+    S.routines=r.routines||[];
+    render();
+  } else {
+    document.getElementById('main').innerHTML='<div class="empty">⚠️ 데이터 불러오기 실패.<br><small>SCRIPT_URL을 확인해주세요.</small></div>';
+  }
+}
+
+// ── 뷰 전환 ──
+function go(v){
+  S.view=v;
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('on',['dash','events','todos','routines'][i]===v));
+  const addLabel={dash:'+ 추가',events:'+ 행사추가',todos:'+ 할일추가',routines:'+ 루틴추가'};
+  document.getElementById('addBtn').textContent=addLabel[v]||'+ 추가';
+  renderMain();
+}
+
+function openAdd(){
+  if(S.view==='events'||S.view==='dash') openEvModal();
+  else if(S.view==='todos') openTodoModal();
+  else if(S.view==='routines') openRoutineModal();
+  else openEvModal();
+}
+
+// ── 전체 렌더 ──
+function render(){renderMC();renderSide();renderMain();}
+
+// ── 미니달력 ──
+function renderMC(){
+  const y=S.mcY,m=S.mcM;
+  document.getElementById('mcTitle').textContent=`${y}.${p2(m+1)}`;
+  const dows=['일','월','화','수','목','금','토'];
+  let h=dows.map(d=>`<div class="mc-dow">${d}</div>`).join('');
+  const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();
+  for(let i=0;i<first;i++){const d=new Date(y,m,-first+1+i);h+=`<div class="mc-d om">${d.getDate()}</div>`;}
+  for(let d=1;d<=days;d++){
+    const ds=`${y}-${p2(m+1)}-${p2(d)}`;
+    const isT=ds===today;
+    const hasEv=S.events.some(e=>inRange(ds,e.startDate,e.endDate||e.startDate));
+    h+=`<div class="mc-d${isT?' t':''}${hasEv?' hev':''}">${d}</div>`;
+  }
+  document.getElementById('mcGrid').innerHTML=h;
+}
+function mcNav(d){S.mcM+=d;if(S.mcM>11){S.mcM=0;S.mcY++;}if(S.mcM<0){S.mcM=11;S.mcY--;}renderMC();}
+function inRange(ds,s,e){return ds>=s&&ds<=(e||s)}
+
+// ── 사이드바 ──
+function renderSide(){
+  const todayTodos=S.todos.filter(t=>t.dueDate===today&&!t.done);
+  document.getElementById('sbTodos').innerHTML=todayTodos.length
+    ?todayTodos.map(t=>`<div class="si" onclick="openTodoModal('${t.id}')"><div class="si-t">${t.title}</div><div class="si-m">${t.category||''}</div></div>`).join('')
+    :'<div class="si-empty">오늘 할일 없음</div>';
+
+  const urgentEvs=S.events.filter(e=>e.endDate&&e.endDate>=today&&e.endDate<=addD(3)).sort((a,b)=>a.endDate.localeCompare(b.endDate));
+  document.getElementById('sbUrgent').innerHTML=urgentEvs.length
+    ?urgentEvs.map(e=>`<div class="si" onclick="openEvModal(S.events.find(x=>x.id==='${e.id}'))"><div class="si-t">${e.site} ${e.title}</div><div class="si-m">마감 ${korDate(e.endDate)}</div></div>`).join('')
+    :'<div class="si-empty">임박 마감 없음</div>';
+}
+
+// ── 메인 렌더 ──
+function renderMain(){
+  const c=document.getElementById('main');
+  if(S.view==='dash')     c.innerHTML=buildDash();
+  else if(S.view==='events')   c.innerHTML=buildEvents();
+  else if(S.view==='todos')    c.innerHTML=buildTodos();
+  else if(S.view==='routines') c.innerHTML=buildRoutines();
+}
+
+// ── 대시보드 ──
+function buildDash(){
+  const wd=['일','월','화','수','목','금','토'];
+  const weekEvs=S.events.filter(e=>inRange(today,e.startDate,e.endDate||e.startDate)||
+    (e.startDate>=weekStart()&&e.startDate<=weekEnd())).slice(0,8);
+  const todayTodos=S.todos.filter(t=>t.dueDate===today&&!t.done).slice(0,6);
+
+  const weHTML=weekEvs.length?weekEvs.map(e=>{
+    const done=CHK_KEYS.filter(k=>e[k]).length;
+    return `<div class="we-item" onclick="openEvModal(S.events.find(x=>x.id==='${e.id}'))">
+      <span class="we-site">${e.site}</span>
+      <div class="we-info">
+        <div class="we-title">${e.title}</div>
+        <div class="we-meta">
+          <span>${korDate(e.startDate)}${e.endDate&&e.endDate!==e.startDate?'~'+korDate(e.endDate):''}</span>
+          ${e.discountRate?`<span>할인 ${e.discountRate}%</span>`:''}
+        </div>
+        <div class="we-chk">${CHK_KEYS.map(k=>`<div class="chk-dot${e[k]?' done':''}" title="${CHK_LABELS[k]}"></div>`).join('')}</div>
+      </div>
+    </div>`;
+  }).join(''):'<div class="si-empty">이번주 행사 없음</div>';
+
+  const ttHTML=todayTodos.length?todayTodos.map(t=>`
+    <div class="tt-item${t.done?' done-item':''}" onclick="openTodoModal('${t.id}')">
+      <div class="chkbox${t.done?' on':''}" onclick="event.stopPropagation();toggleTodo('${t.id}')"></div>
+      <div class="p-dot p${t.priority||'m'}"></div>
+      <span class="tt-text">${t.title}</span>
+    </div>`).join(''):'<div class="si-empty">오늘 할일 없음 🎉</div>';
+
+  return `<div class="dash-greeting">안녕하세요, 강대표님 👋</div>
+  <div class="dash-date">${T.getFullYear()}년 ${T.getMonth()+1}월 ${T.getDate()}일 (${wd[T.getDay()]}요일)</div>
+  <div class="dash-cols">
+    <div class="dash-card">
+      <div class="dc-title">이번주 행사 <span class="dc-count">${weekEvs.length}건</span></div>
+      <div class="week-ev">${weHTML}</div>
+    </div>
+    <div class="dash-card">
+      <div class="dc-title">오늘 할일 <span class="dc-count">${todayTodos.length}건</span></div>
+      <div class="today-todos">${ttHTML}</div>
+      ${S.todos.filter(t=>!t.done&&t.dueDate>today&&t.dueDate<=addD(7)).length?
+        `<div style="margin-top:10px;font-size:11px;color:var(--gray5)">+ 이번주 마감 ${S.todos.filter(t=>!t.done&&t.dueDate>today&&t.dueDate<=addD(7)).length}건 더 있어요 <button onclick="go('todos')" style="border:none;background:transparent;color:var(--g);font-size:11px;cursor:pointer;font-weight:600">전체보기 →</button></div>`:''}
+    </div>
+  </div>`;
+}
+
+// ── 행사 탭 ──
+function buildEvents(){
+  const filters=[{v:'all',l:'전체'},{v:'routine',l:'루틴행사'},{v:'promo',l:'비정기행사'},{v:'settle',l:'정산'},{v:'order',l:'발주마감'}];
+  let evs=S.events.filter(e=>S.evFilter==='all'||e.type===S.evFilter)
+    .sort((a,b)=>a.startDate.localeCompare(b.startDate));
+
+  const cards=evs.length?evs.map(e=>{
+    const t=EV_TYPES.find(x=>x.v===e.type)||EV_TYPES[1];
+    const done=CHK_KEYS.filter(k=>e[k]).length;
+    const pct=Math.round(done/4*100);
+    const chks=CHK_KEYS.map(k=>`<span class="chk-item${e[k]?' on':''}" onclick="event.stopPropagation();toggleEvChk('${e.id}','${k}')">${CHK_LABELS[k]}</span>`).join('');
+    const hasSales=e.salesTarget||e.salesResult;
+    return `<div class="ev-card" onclick="openEvModal(S.events.find(x=>x.id==='${e.id}'))">
+      <div class="ev-card-head">
+        <span class="ev-site-badge">${e.site}</span>
+        <span class="ev-type-badge ${t.cls}">${t.l}</span>
+        <span class="ev-title">${e.title}</span>
+      </div>
+      <div class="ev-card-meta">
+        <span class="ev-meta-item">📅 <strong>${korDate(e.startDate)}${e.endDate&&e.endDate!==e.startDate?' ~ '+korDate(e.endDate):''}</strong></span>
+        ${e.discountRate?`<span class="ev-meta-item">🏷 <strong>${e.discountRate}%</strong> 할인</span>`:''}
+        ${e.mdContact?`<span class="ev-meta-item">👤 <strong>${e.mdContact}</strong></span>`:''}
+      </div>
+      <div class="ev-chklist">${chks}</div>
+      <div class="ev-progress">
+        <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+        <div class="prog-label">진행 ${done}/4 완료</div>
+      </div>
+      ${hasSales?`<div class="sales-row">
+        <div class="sales-item"><div class="sales-label">매출 목표</div><div class="sales-val">${e.salesTarget?numFmt(e.salesTarget)+'원':'-'}</div></div>
+        <div class="sales-item"><div class="sales-label">실적</div><div class="sales-val${e.salesResult&&e.salesTarget&&Number(e.salesResult)>=Number(e.salesTarget)?' hit':''}">${e.salesResult?numFmt(e.salesResult)+'원':'-'}</div></div>
+      </div>`:''}
+    </div>`;
+  }).join(''):'<div class="empty">등록된 행사가 없어요</div>';
+
+  return `<div class="ev-toolbar">
+    <div class="ev-filter">${filters.map(f=>`<button class="fbtn${S.evFilter===f.v?' on':''}" onclick="setEvFilter('${f.v}')">${f.l}</button>`).join('')}</div>
+    <span style="font-size:12px;color:var(--gray5)">${evs.length}건</span>
+  </div>
+  <div class="ev-list">${cards}</div>`;
+}
+
+function setEvFilter(v){S.evFilter=v;renderMain();}
+
+async function toggleEvChk(id,key){
+  const e=S.events.find(x=>x.id===id);
+  if(!e)return;
+  e[key]=!e[key];
+  renderMain();
+  await api('saveEvent',{data:JSON.stringify(e)});
+}
+
+// ── 할일 탭 ──
+function buildTodos(){
+  const pending=S.todos.filter(t=>!t.done).sort((a,b)=>{
+    const pm={high:0,mid:1,low:2};
+    return (pm[a.priority]||1)-(pm[b.priority]||1)||a.dueDate.localeCompare(b.dueDate);
+  });
+  const done=S.todos.filter(t=>t.done);
+
+  const card=t=>`<div class="todo-item${t.done?' done-item':''}" onclick="openTodoModal('${t.id}')">
+    <div class="chkbox${t.done?' on':''}" onclick="event.stopPropagation();toggleTodo('${t.id}')"></div>
+    <div style="flex:1">
+      <div class="ti-title">${t.title}</div>
+      <div class="ti-meta">
+        ${t.priority?`<span class="pri-badge pri-${t.priority[0]}">${{high:'높음',mid:'보통',low:'낮음'}[t.priority]}</span>`:''}
+        ${t.category?`<span class="cat-badge">${t.category}</span>`:''}
+        ${t.dueDate?`<span>${t.dueDate}</span>`:''}
+      </div>
+    </div>
+  </div>`;
+
+  return `<div class="todo-group">
+    <div class="tg-title">미완료 <span class="tg-count">${pending.length}</span></div>
+    ${pending.length?pending.map(card).join(''):'<div class="empty">할일 없음 🎉</div>'}
+  </div>
+  ${done.length?`<div class="todo-group">
+    <div class="tg-title">완료 <span class="tg-count">${done.length}</span></div>
+    <div style="opacity:.55">${done.map(card).join('')}</div>
+  </div>`:''}`;
+}
+
+async function toggleTodo(id){
+  const t=S.todos.find(x=>x.id===id);
+  if(!t)return;
+  t.done=!t.done;
+  render();
+  await api('toggleTodo',{id});
+}
+
+// ── 루틴 탭 ──
+function buildRoutines(){
+  const active=S.routines.filter(r=>r.active!==false);
+  const inactive=S.routines.filter(r=>r.active===false);
+  const card=r=>`<div class="rt-card${r.active===false?' inactive':''}" >
+    <div class="rt-site">${r.site}</div>
+    <div class="rt-title">${r.title}</div>
+    <div class="rt-meta">${r.discountRate?`할인 ${r.discountRate}%  `:''} ${r.mdContact?`MD: ${r.mdContact}`:''}</div>
+    <div class="rt-actions">
+      <button class="btn-use" onclick="useRoutine('${r.id}')">📋 이번달 행사로 등록</button>
+      <button class="btn-edit-sm" onclick="openRoutineModal('${r.id}')">수정</button>
+    </div>
+  </div>`;
+
+  return `<div style="margin-bottom:14px;font-size:12px;color:var(--gray5)">루틴행사 템플릿을 만들어두고, 버튼 하나로 이번달 행사로 등록하세요.</div>
+  <div class="routine-grid">${active.length?active.map(card).join(''):'<div class="empty">루틴 템플릿을 추가해주세요</div>'}
+  </div>
+  ${inactive.length?`<div style="margin-top:16px;font-size:11px;color:var(--gray5);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">비활성</div><div class="routine-grid">${inactive.map(card).join('')}</div>`:''}`;
+}
+
+async function useRoutine(rid){
+  const r=S.routines.find(x=>x.id===rid);
+  if(!r)return;
+  const now=new Date();
+  const startDate=`${now.getFullYear()}-${p2(now.getMonth()+1)}-01`;
+  const lastDay=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const endDate=`${now.getFullYear()}-${p2(now.getMonth()+1)}-${lastDay}`;
+  const ev={
+    id:'',site:r.site,title:r.title,type:'routine',
+    startDate,endDate,
+    discountRate:r.discountRate||'',mdContact:r.mdContact||'',
+    salesTarget:'',salesResult:'',
+    chk_apply:false,chk_material:false,chk_coupon:false,chk_result:false,
+    memo:r.memo||'',isRoutine:true,routineId:r.id
+  };
+  openEvModal(ev);
+}
+
+// ── 행사 모달 ──
+function openEvModal(ev){
+  const d=ev||{id:'',site:'',title:'',type:'routine',startDate:today,endDate:'',
+    discountRate:'',mdContact:'',salesTarget:'',salesResult:'',
+    chk_apply:false,chk_material:false,chk_coupon:false,chk_result:false,
+    memo:'',isRoutine:false,routineId:''};
+  const isEdit=!!d.id;
+
+  document.getElementById('mroot').innerHTML=`
+  <div class="modal-bg" onclick="if(event.target.classList.contains('modal-bg'))closeM()">
+    <div class="modal">
+      <div class="modal-hd"><h3>${isEdit?'행사 수정':'새 행사 등록'}</h3></div>
+      <div class="modal-body">
+        <div class="fr2">
+          <div><label class="fl">입점사</label>
+            <select id="m-site" class="fi">
+              ${SITES.map(s=>`<option value="${s}"${d.site===s?' selected':''}>${s}</option>`).join('')}
+            </select>
+          </div>
+          <div><label class="fl">유형</label>
+            <select id="m-type" class="fi">
+              ${EV_TYPES.map(t=>`<option value="${t.v}"${d.type===t.v?' selected':''}>${t.l}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div><label class="fl">행사명</label>
+          <input id="m-title" class="fi" type="text" value="${d.title}" placeholder="예) 5월 로켓특가">
+        </div>
+        <div class="fr2">
+          <div><label class="fl">시작일</label><input id="m-sd" class="fi" type="date" value="${d.startDate}"></div>
+          <div><label class="fl">종료일</label><input id="m-ed" class="fi" type="date" value="${d.endDate||''}"></div>
+        </div>
+        <div class="fr2">
+          <div><label class="fl">할인율 (%)</label><input id="m-dr" class="fi" type="number" value="${d.discountRate||''}" placeholder="예) 15"></div>
+          <div><label class="fl">MD 연락처</label><input id="m-md" class="fi" type="text" value="${d.mdContact||''}" placeholder="이름 또는 연락처"></div>
+        </div>
+        <div><label class="fl">체크리스트</label>
+          <div class="chk-group">
+            ${CHK_KEYS.map(k=>`<div class="chk-toggle${d[k]?' on':''}" id="ct-${k}" onclick="ctgl('${k}')"><div class="cb"></div>${CHK_LABELS[k]}</div>`).join('')}
+          </div>
+        </div>
+        <div class="fr2">
+          <div><label class="fl">매출 목표 (원)</label><input id="m-st" class="fi" type="number" value="${d.salesTarget||''}" placeholder="예) 500000"></div>
+          <div><label class="fl">매출 실적 (원)</label><input id="m-sr" class="fi" type="number" value="${d.salesResult||''}" placeholder="예) 420000"></div>
+        </div>
+        <div><label class="fl">메모</label><textarea id="m-memo" class="fi">${d.memo||''}</textarea></div>
+      </div>
+      <div class="modal-ft">
+        ${isEdit?`<button class="btn-del" onclick="delEv('${d.id}')">삭제</button>`:''}
+        <button class="btn-cancel" onclick="closeM()">취소</button>
+        <button class="btn-save" onclick="saveEv('${d.id||''}')">저장</button>
+      </div>
+    </div>
+  </div>`;
+  setTimeout(()=>document.getElementById('m-title').focus(),80);
+}
+
+const ctState={};
+function ctgl(k){
+  ctState[k]=ctState[k]===undefined?true:!ctState[k];
+  const el=document.getElementById('ct-'+k);
+  if(el) el.classList.toggle('on',ctState[k]);
+}
+function getChk(k,orig){
+  if(ctState[k]!==undefined) return ctState[k];
+  return orig||false;
+}
+
+async function saveEv(id){
+  const title=document.getElementById('m-title').value.trim();
+  if(!title){alert('행사명을 입력해주세요');return;}
+  // chk 초기값 가져오기 위해 기존 데이터 참조
+  const orig=S.events.find(x=>x.id===id)||{};
+  const ev={
+    id:id||'',
+    site:document.getElementById('m-site').value,
+    title,
+    type:document.getElementById('m-type').value,
+    startDate:document.getElementById('m-sd').value,
+    endDate:document.getElementById('m-ed').value||'',
+    discountRate:document.getElementById('m-dr').value||'',
+    mdContact:document.getElementById('m-md').value||'',
+    salesTarget:document.getElementById('m-st').value||'',
+    salesResult:document.getElementById('m-sr').value||'',
+    chk_apply:getChk('chk_apply',orig.chk_apply),
+    chk_material:getChk('chk_material',orig.chk_material),
+    chk_coupon:getChk('chk_coupon',orig.chk_coupon),
+    chk_result:getChk('chk_result',orig.chk_result),
+    memo:document.getElementById('m-memo').value||'',
+    isRoutine:orig.isRoutine||false,
+    routineId:orig.routineId||''
+  };
+  closeM();
+  if(id){S.events=S.events.map(x=>x.id===id?{...x,...ev}:x);}
+  else{ev.id=Date.now().toString();S.events.push(ev);}
+  render();
+  // ctState 초기화
+  Object.keys(ctState).forEach(k=>delete ctState[k]);
+  await api('saveEvent',{data:JSON.stringify(ev)});
+}
+
+async function delEv(id){
+  if(!confirm('행사를 삭제할까요?'))return;
+  closeM();
+  S.events=S.events.filter(x=>x.id!==id);
+  render();
+  await api('deleteEvent',{id});
+}
+
+// ── 할일 모달 ──
+function openTodoModal(idOrObj){
+  const existing=typeof idOrObj==='string'?S.todos.find(x=>x.id===idOrObj):null;
+  const d=existing||{id:'',title:'',category:'기타',dueDate:today,priority:'mid',done:false,memo:''};
+  const isEdit=!!d.id;
+  document.getElementById('mroot').innerHTML=`
+  <div class="modal-bg" onclick="if(event.target.classList.contains('modal-bg'))closeM()">
+    <div class="modal">
+      <div class="modal-hd"><h3>${isEdit?'할일 수정':'새 할일 추가'}</h3></div>
+      <div class="modal-body">
+        <div><label class="fl">제목</label><input id="t-title" class="fi" type="text" value="${d.title}" placeholder="할일 제목"></div>
+        <div class="fr2">
+          <div><label class="fl">카테고리</label>
+            <select id="t-cat" class="fi">${CATS.map(c=>`<option value="${c}"${d.category===c?' selected':''}>${c}</option>`).join('')}</select>
+          </div>
+          <div><label class="fl">마감일</label><input id="t-due" class="fi" type="date" value="${d.dueDate||today}"></div>
+        </div>
+        <div><label class="fl">우선순위</label>
+          <select id="t-pri" class="fi">${PRIS.map(p=>`<option value="${p.v}"${d.priority===p.v?' selected':''}>${p.l}</option>`).join('')}</select>
+        </div>
+        <div><label class="fl">메모</label><textarea id="t-memo" class="fi">${d.memo||''}</textarea></div>
+      </div>
+      <div class="modal-ft">
+        ${isEdit?`<button class="btn-del" onclick="delTodo('${d.id}')">삭제</button>`:''}
+        <button class="btn-cancel" onclick="closeM()">취소</button>
+        <button class="btn-save" onclick="saveTodo('${d.id||''}')">저장</button>
+      </div>
+    </div>
+  </div>`;
+  setTimeout(()=>document.getElementById('t-title').focus(),80);
+}
+
+async function saveTodo(id){
+  const title=document.getElementById('t-title').value.trim();
+  if(!title){alert('제목을 입력해주세요');return;}
+  const orig=S.todos.find(x=>x.id===id)||{};
+  const t={
+    id:id||'',title,
+    category:document.getElementById('t-cat').value,
+    dueDate:document.getElementById('t-due').value,
+    priority:document.getElementById('t-pri').value,
+    done:orig.done||false,
+    memo:document.getElementById('t-memo').value||''
+  };
+  closeM();
+  if(id){S.todos=S.todos.map(x=>x.id===id?{...x,...t}:x);}
+  else{t.id=Date.now().toString();S.todos.push(t);}
+  render();
+  await api('saveTodo',{data:JSON.stringify(t)});
+}
+
+async function delTodo(id){
+  if(!confirm('삭제할까요?'))return;
+  closeM();S.todos=S.todos.filter(x=>x.id!==id);render();
+  await api('deleteTodo',{id});
+}
+
+// ── 루틴 모달 ──
+function openRoutineModal(id){
+  const d=S.routines.find(x=>x.id===id)||{id:'',site:'',title:'',discountRate:'',mdContact:'',memo:'',active:true};
+  const isEdit=!!d.id;
+  document.getElementById('mroot').innerHTML=`
+  <div class="modal-bg" onclick="if(event.target.classList.contains('modal-bg'))closeM()">
+    <div class="modal">
+      <div class="modal-hd"><h3>${isEdit?'루틴 수정':'새 루틴 템플릿'}</h3></div>
+      <div class="modal-body">
+        <div><label class="fl">입점사</label>
+          <select id="r-site" class="fi">${SITES.map(s=>`<option value="${s}"${d.site===s?' selected':''}>${s}</option>`).join('')}</select>
+        </div>
+        <div><label class="fl">루틴행사명</label><input id="r-title" class="fi" type="text" value="${d.title}" placeholder="예) 월간 로켓특가"></div>
+        <div class="fr2">
+          <div><label class="fl">기본 할인율 (%)</label><input id="r-dr" class="fi" type="number" value="${d.discountRate||''}"></div>
+          <div><label class="fl">MD 연락처</label><input id="r-md" class="fi" type="text" value="${d.mdContact||''}"></div>
+        </div>
+        <div><label class="fl">메모</label><textarea id="r-memo" class="fi">${d.memo||''}</textarea></div>
+      </div>
+      <div class="modal-ft">
+        ${isEdit?`<button class="btn-del" onclick="delRoutine('${d.id}')">삭제</button>`:''}
+        <button class="btn-cancel" onclick="closeM()">취소</button>
+        <button class="btn-save" onclick="saveRoutine('${d.id||''}')">저장</button>
+      </div>
+    </div>
+  </div>`;
+  setTimeout(()=>document.getElementById('r-title').focus(),80);
+}
+
+async function saveRoutine(id){
+  const title=document.getElementById('r-title').value.trim();
+  if(!title){alert('루틴명을 입력해주세요');return;}
+  const r={id:id||'',site:document.getElementById('r-site').value,title,
+    discountRate:document.getElementById('r-dr').value||'',
+    mdContact:document.getElementById('r-md').value||'',
+    memo:document.getElementById('r-memo').value||'',active:true};
+  closeM();
+  if(id){S.routines=S.routines.map(x=>x.id===id?{...x,...r}:x);}
+  else{r.id=Date.now().toString();S.routines.push(r);}
+  render();
+  await api('saveRoutine',{data:JSON.stringify(r)});
+}
+
+async function delRoutine(id){
+  if(!confirm('루틴 템플릿을 삭제할까요?'))return;
+  closeM();S.routines=S.routines.filter(x=>x.id!==id);render();
+  await api('deleteRoutine',{id});
+}
+
+function closeM(){
+  document.getElementById('mroot').innerHTML='';
+  Object.keys(ctState).forEach(k=>delete ctState[k]);
+}
+
+// ── 시작 ──
+load();
+</script>
+</body>
+</html>
