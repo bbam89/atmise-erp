@@ -1007,26 +1007,23 @@ function renderSettle(){
   const ms=document.getElementById('stf-s')?.value||'';
   const me=document.getElementById('stf-e')?.value||'';
   const ch=document.getElementById('stf-ch')?.value||'';
-  let list=settles.filter(s=>{
-    if(ms&&s.month<ms)return false;
-    if(me&&s.month>me)return false;
-    if(ch&&s.channel!==ch)return false;
-    return true;
-  });
+  let manualList=settles.filter(s=>{if(ms&&s.month<ms)return false;if(me&&s.month>me)return false;if(ch&&s.channel!==ch)return false;return true;});
+  const ordersSettled=orders.filter(o=>{if(o.status==='can'||!o.settled)return false;const oMonth=(o.settleDate||o.date||'').slice(0,7);if(ms&&oMonth<ms)return false;if(me&&oMonth>me)return false;if(ch&&o.channel!==ch)return false;return true;});
+  const orderGroups={};
+  ordersSettled.forEach(o=>{const oMonth=(o.settleDate||o.date||'').slice(0,7);const key=oMonth+'||'+o.channel;if(!orderGroups[key])orderGroups[key]={month:oMonth,channel:o.channel,orders:[]};orderGroups[key].orders.push(o);});
+  const orderRows=Object.values(orderGroups).map(g=>{const totalSettle=g.orders.reduce((a,o)=>a+Number(o.settle||0),0);const totalSales=g.orders.reduce((a,o)=>a+Number(o.price||0),0);return{month:g.month,channel:g.channel,sales:totalSales,net:totalSettle,cnt:g.orders.length,fromOrders:true};});
   const sum=document.getElementById('st-sum');
   const tb=document.getElementById('st-list');
-  if(!list.length){tb.innerHTML='<tr><td colspan="9" class="empty">조건에 맞는 정산 없음</td></tr>';sum.style.display='none';return;}
-  const ts=list.reduce((a,x)=>a+x.sales,0);
-  const tn=list.reduce((a,x)=>a+x.net,0);
+  const allRows=[...manualList.map(s=>({...s,fromOrders:false})),...orderRows].sort((a,b)=>b.month.localeCompare(a.month)||a.channel.localeCompare(b.channel));
+  if(!allRows.length){tb.innerHTML='<tr><td colspan="9" class="empty">조건에 맞는 정산 없음</td></tr>';sum.style.display='none';return;}
+  const ts=allRows.reduce((a,x)=>a+Number(x.sales||0),0);
+  const tn=allRows.reduce((a,x)=>a+Number(x.net||0),0);
   sum.style.display='flex';
-  sum.innerHTML=`${list.length}건 | 총 매출액 <span>${W(ts)}</span> &nbsp;|&nbsp; 총 실정산액 <span>${W(tn)}</span>`;
-  tb.innerHTML=[...list].reverse().map(s=>`<tr>
-    <td>${s.month}</td><td><span class="tag">${s.channel}</span></td>
-    <td>${W(s.sales)}</td><td>${W(s.fee)}</td><td>${W(s.ad)}</td><td>${W(s.etc)}</td>
-    <td style="font-weight:600;color:#1D9E75">${W(s.net)}</td>
-    <td>${s.note||''}</td>
-    <td><button class="btn sm danger" onclick="delSettle(${s.id})"><i class="ti ti-trash"></i></button></td>
-  </tr>`).join('');
+  sum.innerHTML=`${allRows.length}건 | 총 매출액 <span>${W(ts)}</span> &nbsp;|&nbsp; 총 실정산액 <span>${W(tn)}</span>`;
+  tb.innerHTML=allRows.map(s=>{
+    if(s.fromOrders){return `<tr style="background:#F0FBF7"><td>${s.month}</td><td><span class="tag">${s.channel}</span> <span class="badge bd-ship" style="font-size:9px">주문자동</span></td><td>${W(s.sales)}</td><td>-</td><td>-</td><td>-</td><td style="font-weight:600;color:#1D9E75">${W(s.net)}</td><td style="font-size:11px;color:var(--text3)">정산완료 ${s.cnt}건 합계</td><td></td></tr>`;}
+    return `<tr><td>${s.month}</td><td><span class="tag">${s.channel}</span></td><td>${W(s.sales)}</td><td>${W(s.fee)}</td><td>${W(s.ad)}</td><td>${W(s.etc)}</td><td style="font-weight:600;color:#1D9E75">${W(s.net)}</td><td>${s.note||''}</td><td><button class="btn sm danger" onclick="delSettle(${s.id})"><i class="ti ti-trash"></i></button></td></tr>`;
+  }).join('');
 }
 
 function delSettle(id){if(!confirm('삭제?'))return;settles=settles.filter(x=>x.id!==id);save();renderSettle();}
