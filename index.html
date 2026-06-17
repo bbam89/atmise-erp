@@ -1021,7 +1021,7 @@ function renderSettle(){
   sum.style.display='flex';
   sum.innerHTML=`${allRows.length}건 | 총 매출액 <span>${W(ts)}</span> &nbsp;|&nbsp; 총 실정산액 <span>${W(tn)}</span>`;
   tb.innerHTML=allRows.map(s=>{
-    if(s.fromOrders){return `<tr style="background:#F0FBF7"><td>${s.month}</td><td><span class="tag">${s.channel}</span> <span class="badge bd-ship" style="font-size:9px">주문자동</span></td><td>${W(s.sales)}</td><td>-</td><td>-</td><td>-</td><td style="font-weight:600;color:#1D9E75">${W(s.net)}</td><td style="font-size:11px;color:var(--text3)">정산완료 ${s.cnt}건 합계</td><td></td></tr>`;}
+   if(s.fromOrders){return `<tr style="background:#F0FBF7;color:#1a1a1a"><td>${s.month}</td><td><span class="tag">${s.channel}</span> <span class="badge bd-ship" style="font-size:9px">주문자동</span></td><td>${W(s.sales)}</td><td>-</td><td>-</td><td>-</td><td style="font-weight:600;color:#1D9E75">${W(s.net)}</td><td style="font-size:11px;color:var(--text3)">정산완료 ${s.cnt}건 합계</td><td></td></tr>`;}
     return `<tr><td>${s.month}</td><td><span class="tag">${s.channel}</span></td><td>${W(s.sales)}</td><td>${W(s.fee)}</td><td>${W(s.ad)}</td><td>${W(s.etc)}</td><td style="font-weight:600;color:#1D9E75">${W(s.net)}</td><td>${s.note||''}</td><td><button class="btn sm danger" onclick="delSettle(${s.id})"><i class="ti ti-trash"></i></button></td></tr>`;
   }).join('');
 }
