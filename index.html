@@ -759,8 +759,10 @@ function renderDash(){
   // 이번달 매출액 — price는 이미 총금액이므로 qty 곱하지 않음
   const sales=mo.reduce((a,o)=>a+Number(o.price||0),0);
   // 이번달 정산액 — 정산관리 탭 입력된 것만 표시 (미입력시 0원)
-  const rev=settles.filter(s=>s.month&&s.month.startsWith(ym)).reduce((a,s)=>a+Number(s.net||0),0);
-  const revLabel=rev>0?'정산관리 탭 기준':'정산 미입력';
+  const revFromOrders=orders.filter(o=>o.date&&o.date.startsWith(ym)&&o.settled&&o.status!=='can').reduce((a,o)=>a+Number(o.settle||0),0);
+  const revFromSettles=settles.filter(s=>s.month&&s.month.startsWith(ym)).reduce((a,s)=>a+Number(s.net||0),0);
+  const rev=revFromOrders+revFromSettles;
+  const revLabel=rev>0?`주문정산 ${W(revFromOrders)} + 정산탭 ${W(revFromSettles)}`:'정산 미입력';
   // 입금완료/미입금
   const allActive=orders.filter(o=>o.status!=='can');
   const settledCnt=allActive.filter(o=>o.settled).length;
@@ -929,14 +931,14 @@ function toggleSettle(id){
   o.settled=!o.settled;
   if(o.settled&&!o.settleDate) o.settleDate=new Date().toISOString().slice(0,10);
   if(!o.settled) o.settleDate='';
-  save();renderOrders();
+save();renderOrders();renderDash();
 }
 
 function setSettleDate(id,val){
   const o=orders.find(x=>x.id===id);if(!o)return;
   o.settleDate=val;
-  if(val) o.settled=true;
-  save();
+if(val) o.settled=true;
+  save();renderDash();
 }
 
 // ===== 재고관리 =====
