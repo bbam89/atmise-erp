@@ -1032,7 +1032,7 @@ function delSettle(id){if(!confirm('삭제?'))return;settles=settles.filter(x=>x
 function addPurchase(){
   const d={id:Date.now(),date:document.getElementById('p-date').value,vendor:document.getElementById('p-vendor').value.trim(),sku:document.getElementById('p-sku').value,qty:Number(document.getElementById('p-qty').value)||0,price:Number(document.getElementById('p-price').value)||0,due:document.getElementById('p-due').value,status:document.getElementById('p-st').value,note:document.getElementById('p-note').value};
   if(!d.qty){alert('발주수량을 입력해주세요.');return;}
-  purchases.push(d);save();renderPurchase();
+  purchases.push(d);if(d.status==='done'){const s=stocks.find(x=>x.sku===d.sku);if(s){const prev=s.inQty||0;s.inQty=(s.inQty||0)+d.qty;if(d.price>0&&s.inQty>0)s.avgPrice=Math.round((s.avgPrice*prev+d.price*d.qty)/s.inQty)||d.price;s.qty=s.qty+d.qty;}}save();renderPurchase();renderStock();
   ['p-qty','p-price','p-note'].forEach(id=>document.getElementById(id).value='');
 }
 
