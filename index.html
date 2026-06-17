@@ -991,7 +991,7 @@ function adjStock(){
     if(adj>0){const prev=s.inQty||0;s.inQty=(s.inQty||0)+adj;if(price>0&&s.inQty>0)s.avgPrice=Math.round((s.avgPrice*prev+price*adj)/s.inQty)||price;}
     s.qty=Math.max(0,s.qty+adj);
   }
-  const log={id:Date.now(),date:new Date().toISOString().slice(0,10),sku,skuName:(s?s.name:''),adj,price,reason};stockLogs.push(log);save();renderStock();renderStockLog();['s-adj','s-price','s-reason'].forEach(id=>document.getElementById(id).value='');alert('재고 조정 완료');}
+  const reason=document.getElementById('s-reason').value.trim();const log={id:Date.now(),date:new Date().toISOString().slice(0,10),sku,skuName:(s?s.name:''),adj,price,reason};stockLogs.push(log);save();renderStock();renderStockLog();['s-adj','s-price','s-reason'].forEach(id=>document.getElementById(id).value='');alert('재고 조정 완료');}
 
 // ===== 정산관리 =====
 function calcSt(){
