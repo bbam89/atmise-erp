@@ -832,7 +832,7 @@ function addOrder(){
   const d={id:Date.now(),date:document.getElementById('o-date').value,channel:document.getElementById('o-ch').value,buyer:document.getElementById('o-buyer').value.trim(),orderNum:document.getElementById('o-num').value.trim(),sku,qty:document.getElementById('o-qty').value,price:document.getElementById('o-price').value||0,settle:document.getElementById('o-settle').value||0,ship:document.getElementById('o-ship').value,track:document.getElementById('o-track').value.trim(),status:document.getElementById('o-status').value,note:document.getElementById('o-note').value.trim(),productName,settled:false,settleDate:''};
   if(!d.qty){alert('수량을 입력해주세요.');return;}
   orders.push(d);
-  if(s&&d.status!=='can'){s.qty=Math.max(0,s.qty-Number(d.qty));s.outQty=(s.outQty||0)+Number(d.qty);}
+  if(s&&d.status!=='can'){s.qty=s.qty-Number(d.qty);s.outQty=(s.outQty||0)+Number(d.qty);}
   save();renderOrders();
   ['o-buyer','o-num','o-qty','o-price','o-settle','o-track','o-note'].forEach(id=>document.getElementById(id).value='');
   if(pnameEl) pnameEl.value='';
@@ -917,6 +917,7 @@ function closeOrderEdit(){document.getElementById('order-edit-modal').classList.
 function saveOrderEdit(){
   const id=Number(document.getElementById('oe-id').value);
   const o=orders.find(x=>x.id===id);if(!o)return;
+  const oldSku=o.sku;const oldQty=Number(o.qty);const oldStatus=o.status;
   o.date=document.getElementById('oe-date').value;
   o.channel=document.getElementById('oe-ch').value;
   o.buyer=document.getElementById('oe-buyer').value.trim();
@@ -932,13 +933,16 @@ function saveOrderEdit(){
   o.note=document.getElementById('oe-note').value.trim();
   o.settled=document.getElementById('oe-settled').value==='true';
   o.settleDate=document.getElementById('oe-settledate').value;
+  const newSku=o.sku;const newQty=Number(o.qty);const newStatus=o.status;
+if(oldStatus!=='can'){const os=stocks.find(x=>x.sku===oldSku);if(os){os.qty+=oldQty;os.outQty=Math.max(0,(os.outQty||0)-oldQty);}}
+if(newStatus!=='can'){const ns=stocks.find(x=>x.sku===newSku);if(ns){ns.qty-=newQty;ns.outQty=(ns.outQty||0)+newQty;}}
   save();renderOrders();closeOrderEdit();
 }
 
 function delOrder(id){
   if(!confirm('삭제할까요?'))return;
   const o=orders.find(x=>x.id===id);
-  if(o&&o.status!=='can'){const s=stocks.find(x=>x.sku===o.sku);if(s){s.qty+=Number(o.qty);s.outQty=Math.max(0,(s.outQty||0)-Number(o.qty));}}
+  if(o&&o.status!=='can'){const s=stocks.find(x=>x.sku===o.sku);if(s){s.qty+=Number(o.qty);s.outQty=(s.outQty||0)-Number(o.qty);}}
   orders=orders.filter(x=>x.id!==id);save();renderOrders();
 }
 
