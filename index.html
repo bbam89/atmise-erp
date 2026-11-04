@@ -1102,7 +1102,7 @@ function renderPurchase(){
   document.getElementById('p-summary').textContent=list.length?`발주금액 합계 ${W(total)}`:'';
   document.getElementById('p-list').innerHTML=[...list].reverse().map(p=>{
     const sc2=p.status==='done'?'bd-done':p.status==='ship'?'bd-ship':'bd-pend';
-    return `<tr><td>${p.date||''}</td><td>${p.vendor||''}</td><td><code>${p.sku}</code></td><td>${N(p.qty)}개</td><td>${W(p.price)}</td><td>${W(p.price*p.qty)}</td><td>${p.due||''}</td><td><span class="badge ${sc2}">${PSM[p.status]}</span></td><td>${p.note||''}</td>
+    return `<tr><td>${p.date||''}</td><td>${p.vendor||''}</td><td><code>${p.sku}</code></td><td>${N(p.qty)}개</td><td>${W(p.price)}</td><td>${W(p.price*p.qty)}</td><td>${p.due||''}</td><td><span class="badge ${sc2}">${PSM[p.status]}</span></td><td>${p.note||''}</td><td style="display:flex;gap:4px"><button class="btn sm info" onclick="openPurchEdit(${p.id})"><i class="ti ti-edit"></i></button><button class="btn sm danger" onclick="delPurch(${p.id})"><i class="ti ti-trash"></i></button></td></tr>`;
   }).join('')||'<tr><td colspan="10" class="empty">발주 없음</td></tr>';
   const ps=document.getElementById('p-sku');if(ps)ps.innerHTML=getSkuOpts(false);
 }
@@ -1131,7 +1131,7 @@ function renderLoss(){
   document.getElementById('l-sum').textContent=losses.length?`총 ${losses.length}건 / ${N(total)}개`:'';
   document.getElementById('l-list').innerHTML=[...losses].reverse().map(l=>{
     const s=stocks.find(x=>x.sku===l.sku);
-    return `<tr><td>${l.date||''}</td><td><code>${l.sku}</code></td><td>${s?s.name:l.sku}</td><td style="color:#A32D2D;font-weight:600">${N(l.qty)}개</td><td><span class="badge bd-loss">${l.type}</span></td><td><span class="badge ${l.deduct?'bd-can':'bd-zero'}">${l.deduct?'차감됨':'이력만'}</span></td><td>${l.note||''}</td><td style="display:flex;gap:4px"><button class="btn sm info" onclick="openPurchEdit(${p.id})"><i class="ti ti-edit"></i></button><button class="btn sm danger" onclick="delPurch(${p.id})"><i class="ti ti-trash"></i></button></td></tr>`;
+    return `<tr><td>${l.date||''}</td><td><code>${l.sku}</code></td><td>${s?s.name:l.sku}</td><td style="color:#A32D2D;font-weight:600">${N(l.qty)}개</td><td><span class="badge bd-loss">${l.type}</span></td><td><span class="badge ${l.deduct?'bd-can':'bd-zero'}">${l.deduct?'차감됨':'이력만'}</span></td><td>${l.note||''}</td><td><button class="btn sm danger" onclick="delLoss(${l.id})"><i class="ti ti-trash"></i></button></td></tr>`;
   }).join('')||'<tr><td colspan="8" class="empty">로스 이력 없음</td></tr>';
 }
 
